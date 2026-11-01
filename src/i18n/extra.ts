@@ -12,18 +12,24 @@ export const EXTRA_KEYS: Record<LangCode, Record<string, string>> = {
     Msg_CalibrateNow: 'Calibrate now (436/546)',
     Msg_Ignore: 'Ignore',
     Menu_Help_GitHubReadme: 'README on GitHub',
+    btn_Fwhm: 'FWHM',
+    Tip_Fwhm: 'Full width at half maximum of peaks',
   },
   CHI: {
     Msg_NotCalibrated: '检测到尚未进行光谱校准。未校准的光谱波长不可信,建议使用荧光灯光源执行 {path} 完成校准。',
     Msg_CalibrateNow: '立即校准 (436/546)',
     Msg_Ignore: '忽略',
     Menu_Help_GitHubReadme: 'GitHub 上的 README',
+    btn_Fwhm: 'FWHM',
+    Tip_Fwhm: '峰的半高全宽',
   },
   CHT: {
     Msg_NotCalibrated: '偵測到尚未進行光譜校準。未校準的光譜波長不可信,建議使用螢光燈光源執行 {path} 完成校準。',
     Msg_CalibrateNow: '立即校準 (436/546)',
     Msg_Ignore: '忽略',
     Menu_Help_GitHubReadme: 'GitHub 上的 README',
+    btn_Fwhm: 'FWHM',
+    Tip_Fwhm: '峰的半高全寬',
   },
   ITA: {
     Msg_NotCalibrated:
@@ -31,6 +37,8 @@ export const EXTRA_KEYS: Record<LangCode, Record<string, string>> = {
     Msg_CalibrateNow: 'Calibra ora (436/546)',
     Msg_Ignore: 'Ignora',
     Menu_Help_GitHubReadme: 'README su GitHub',
+    btn_Fwhm: 'FWHM',
+    Tip_Fwhm: 'Larghezza a metà altezza dei picchi',
   },
   FRA: {
     Msg_NotCalibrated:
@@ -38,6 +46,8 @@ export const EXTRA_KEYS: Record<LangCode, Record<string, string>> = {
     Msg_CalibrateNow: 'Calibrer maintenant (436/546)',
     Msg_Ignore: 'Ignorer',
     Menu_Help_GitHubReadme: 'README sur GitHub',
+    btn_Fwhm: 'FWHM',
+    Tip_Fwhm: 'Largeur à mi-hauteur des pics',
   },
   POR: {
     Msg_NotCalibrated:
@@ -45,5 +55,7 @@ export const EXTRA_KEYS: Record<LangCode, Record<string, string>> = {
     Msg_CalibrateNow: 'Calibrar agora (436/546)',
     Msg_Ignore: 'Ignorar',
     Menu_Help_GitHubReadme: 'README no GitHub',
+    btn_Fwhm: 'FWHM',
+    Tip_Fwhm: 'Largura a meia altura dos picos',
   },
 }

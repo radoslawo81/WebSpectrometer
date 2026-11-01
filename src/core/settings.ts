@@ -35,6 +35,7 @@ export interface Settings {
   LogScale: number
   Dips: boolean
   Peaks: boolean
+  Fwhm: boolean // Web-only: show full width at half maximum of peaks
   Colors: boolean
   TrimScale: boolean
   // Files
@@ -82,6 +83,7 @@ export const DEFAULT_SETTINGS: Settings = {
   LogScale: 0,
   Dips: false,
   Peaks: true,
+  Fwhm: false,
   Colors: true,
   TrimScale: false,
   SpectrumFileSeparator: ';',

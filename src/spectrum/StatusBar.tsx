@@ -43,6 +43,9 @@ export function StatusBar({ measure }: { measure: SpectrumMeasure | null }) {
       <ToggleButton active={settings.Peaks} onClick={() => setSettings({ Peaks: !settings.Peaks })}>
         {t('btn_Peaks')}
       </ToggleButton>
+      <ToggleButton active={settings.Fwhm} title={t('Tip_Fwhm')} onClick={() => setSettings({ Fwhm: !settings.Fwhm })}>
+        {t('btn_Fwhm')}
+      </ToggleButton>
       <ToggleButton active={settings.Colors} onClick={() => setSettings({ Colors: !settings.Colors })}>
         {t('btn_Colors')}
       </ToggleButton>

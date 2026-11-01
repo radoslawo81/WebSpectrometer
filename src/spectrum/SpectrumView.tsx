@@ -7,6 +7,7 @@ import { pipeline, reprocessFileData, subscribeFrame } from '../app/engine'
 import { extractVisible, updatePeakArea } from '../core/pipeline'
 import { valueToY, yToValue } from '../core/logScale'
 import { detectPeaks } from '../core/peaks'
+import { measureFwhm } from '../core/fwhm'
 import { wavelengthToCss } from '../core/wavelengthColor'
 import { addPoint, clampBin, clampNm, nmToBin, removePoint } from '../core/calibration'
 
@@ -259,6 +260,43 @@ export const SpectrumView = forwardRef<HTMLCanvasElement | null, Props>(function
         }
         peakLabelsRef.current.push({ x, y: y2, nm, value: p.value })
       }
+    }
+
+    // FWHM (web-only): measured on the raw samples, drawn as a bar at half maximum.
+    // Under Log scale the bar follows the log-drawn curve (vToY); the width itself is unaffected.
+    if (s.Fwhm && win.length > 4) {
+      const nmPerSample = (nmMax - nmMin) / n
+      const minProminence = 0.05 * win.maxPeakValue // ignore noise bumps
+      const peaks = detectPeaks(win.values, maxV, W, true, false)
+      ctx.font = '11px Arial'
+      ctx.textBaseline = 'middle'
+      ctx.lineWidth = 1
+      for (const p of peaks) {
+        const r = measureFwhm(win.values, p.index, 'local')
+        if (!r || r.prominence < minProminence) continue
+        const xl = idxToX(r.left)
+        const xr = idxToX(r.right)
+        const y = Math.round(vToY(r.half)) + 0.5
+        ctx.strokeStyle = 'rgb(0,80,220)'
+        ctx.beginPath()
+        ctx.moveTo(xl, y)
+        ctx.lineTo(xr, y)
+        ctx.moveTo(xl, y - 4)
+        ctx.lineTo(xl, y + 4)
+        ctx.moveTo(xr, y - 4)
+        ctx.lineTo(xr, y + 4)
+        ctx.stroke()
+        const label = `${(r.width * nmPerSample).toFixed(nmCoeff > 50 ? 3 : 2)} nm`
+        const tw = ctx.measureText(label).width + 6
+        // Label to the right of the bar; flip to the left if it would leave the canvas
+        const lx = xr + 4 + tw <= W ? xr + 4 : xl - 4 - tw
+        ctx.fillStyle = 'rgba(255,255,255,0.85)'
+        ctx.fillRect(lx, y - 7, tw, 14)
+        ctx.fillStyle = 'rgb(0,80,220)'
+        ctx.textAlign = 'left'
+        ctx.fillText(label, lx + 3, y + 1)
+      }
+      ctx.textBaseline = 'alphabetic'
     }
 
     // Calibration labels (when Trim scale is on; see interaction handlers for dragging/add/delete)
