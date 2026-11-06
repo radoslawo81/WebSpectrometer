@@ -140,6 +140,13 @@ export function TopBar({ spectrumCanvas }: { spectrumCanvas: () => HTMLCanvasEle
       >
         {t('Cmp_Toolbar')}
       </ToggleButton>
+      <ToggleButton
+        active={settings.LightVisible}
+        title={t('Lq_ToolbarTip')}
+        onClick={() => setSettings({ LightVisible: !settings.LightVisible })}
+      >
+        {t('Lq_Toolbar')}
+      </ToggleButton>
       <div style={{ flex: 1 }} />
       <ToggleButton
         active={settings.OptionsVisible}

@@ -7,6 +7,7 @@ import { SerialPortPanel, SensorPanel } from '../panels/SerialPanels'
 import { VideoOptionsPanel } from '../panels/VideoOptionsPanel'
 import { VideoControlsWindow } from '../panels/VideoControlsWindow'
 import { CompareWindow } from '../panels/CompareWindow'
+import { LightWindow } from '../panels/LightWindow'
 import { FiltersPanel } from '../panels/FiltersPanel'
 import { FilesPanel } from '../panels/FilesPanel'
 import { SensorSamplesPanel } from '../panels/SensorSamplesPanel'
@@ -123,6 +124,7 @@ export function App() {
       {settings.InfoVisible && <InfoWindow />}
       {showVideoControls && <VideoControlsWindow onClose={() => setShowVideoControls(false)} />}
       {settings.CompareVisible && <CompareWindow onClose={() => setSettings({ CompareVisible: false })} />}
+      {settings.LightVisible && <LightWindow onClose={() => setSettings({ LightVisible: false })} />}
       <CalibrationHint onCalibrate={() => applyTrimPreset(1000, 2000, 436, 546)} />
     </div>
   )
