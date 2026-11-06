@@ -39,6 +39,7 @@ export interface Settings {
   CompareVisible: boolean // Web-only: Compare spectra window open
   CompareOverlay: boolean // Web-only: draw the saved reference spectrum on the graph
   LightVisible: boolean // Web-only: Light quality window open
+  TransVisible: boolean // Web-only: Transmission window open
   Colors: boolean
   TrimScale: boolean
   // Files
@@ -90,6 +91,7 @@ export const DEFAULT_SETTINGS: Settings = {
   CompareVisible: false,
   CompareOverlay: true,
   LightVisible: false,
+  TransVisible: false,
   Colors: true,
   TrimScale: false,
   SpectrumFileSeparator: ';',

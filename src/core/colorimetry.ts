@@ -24,7 +24,7 @@ function planckSpd(T: number): number[] {
 }
 
 // CIE D-series daylight SPD for a given CCT (4000–25000 K), CIE 15 formulae
-function daylightSpd(T: number): number[] {
+export function daylightSpd(T: number): number[] {
   // CCT scaled by 1.4388/1.438 as in CIE 15:2004 for the D-series locus
   const t = (T * 1.4388) / 1.438
   const xD =
@@ -44,7 +44,7 @@ export interface XYZ {
   Z: number
 }
 
-function xyz(spd: number[], refl?: number[]): XYZ {
+export function xyz(spd: number[], refl?: number[]): XYZ {
   let X = 0
   let Y = 0
   let Z = 0
