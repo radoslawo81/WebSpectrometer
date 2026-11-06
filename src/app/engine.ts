@@ -1,7 +1,7 @@
 // Engine: wires CameraCapture → pipeline (§11) → render notification
 // Independent of React; components get per-frame updates via subscribeFrame
 
-import { CameraCapture, type FrameResult } from '../camera/capture'
+import { CameraCapture, type FrameResult, listVideoDevices, devicesNeedPermission, requestVideoDevices } from '../camera/capture'
 import {
   AutoExposure,
   TcdSerial,
@@ -123,8 +123,10 @@ export async function connectCamera(): Promise<void> {
   }
   camera.roi = { startY: settings.StartY, sizeY: settings.SizeY, flipH: settings.FlipH }
   const [w, h] = settings.VideoSize.split('x').map((s) => Number.parseInt(s.trim(), 10))
-  const devices = await navigator.mediaDevices.enumerateDevices()
-  const videoDevs = devices.filter((d) => d.kind === 'videoinput')
+  let videoDevs = await listVideoDevices()
+  // Without permission the list is anonymous and the saved index would silently fall back to the
+  // system default camera: unlock the real list first (Connect is a user gesture)
+  if (devicesNeedPermission(videoDevs)) videoDevs = await requestVideoDevices()
   const idx = Number.parseInt(settings.VideoInDevice, 10)
   const dev = videoDevs[Number.isFinite(idx) ? idx : 0]
   const res = await camera.connect(dev?.deviceId, w || 1920, h || 1080, settings.VideoFPS)
