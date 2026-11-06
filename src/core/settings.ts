@@ -36,6 +36,8 @@ export interface Settings {
   Dips: boolean
   Peaks: boolean
   Fwhm: boolean // Web-only: show full width at half maximum of peaks
+  CompareVisible: boolean // Web-only: Compare spectra window open
+  CompareOverlay: boolean // Web-only: draw the saved reference spectrum on the graph
   Colors: boolean
   TrimScale: boolean
   // Files
@@ -84,6 +86,8 @@ export const DEFAULT_SETTINGS: Settings = {
   Dips: false,
   Peaks: true,
   Fwhm: false,
+  CompareVisible: false,
+  CompareOverlay: true,
   Colors: true,
   TrimScale: false,
   SpectrumFileSeparator: ';',

@@ -133,6 +133,13 @@ export function TopBar({ spectrumCanvas }: { spectrumCanvas: () => HTMLCanvasEle
       <ToggleButton active={settings.Repeat} onClick={() => setSettings({ Repeat: !settings.Repeat })}>
         <Icon src={icoRepeat} /> {t('Tools_Repeat')}
       </ToggleButton>
+      <ToggleButton
+        active={settings.CompareVisible}
+        title={t('Cmp_ToolbarTip')}
+        onClick={() => setSettings({ CompareVisible: !settings.CompareVisible })}
+      >
+        {t('Cmp_Toolbar')}
+      </ToggleButton>
       <div style={{ flex: 1 }} />
       <ToggleButton
         active={settings.OptionsVisible}

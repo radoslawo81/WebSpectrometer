@@ -6,13 +6,14 @@ import { VideoInputPanel } from '../panels/VideoInputPanel'
 import { SerialPortPanel, SensorPanel } from '../panels/SerialPanels'
 import { VideoOptionsPanel } from '../panels/VideoOptionsPanel'
 import { VideoControlsWindow } from '../panels/VideoControlsWindow'
+import { CompareWindow } from '../panels/CompareWindow'
 import { FiltersPanel } from '../panels/FiltersPanel'
 import { FilesPanel } from '../panels/FilesPanel'
 import { SensorSamplesPanel } from '../panels/SensorSamplesPanel'
 import { InfoWindow } from '../info/InfoWindow'
 import { SpectrumView, type SpectrumMeasure } from '../spectrum/SpectrumView'
 import { StatusBar } from '../spectrum/StatusBar'
-import { useAppState } from './store'
+import { setSettings, useAppState } from './store'
 import { loadDataText } from '../core/files'
 import { initAverageAutosave, readLastSpectrum } from './averageAutosave'
 import { applyTrimPreset, connectCamera } from './engine'
@@ -121,6 +122,7 @@ export function App() {
       {showAbout && <AboutDialog onClose={() => setShowAbout(false)} />}
       {settings.InfoVisible && <InfoWindow />}
       {showVideoControls && <VideoControlsWindow onClose={() => setShowVideoControls(false)} />}
+      {settings.CompareVisible && <CompareWindow onClose={() => setSettings({ CompareVisible: false })} />}
       <CalibrationHint onCalibrate={() => applyTrimPreset(1000, 2000, 436, 546)} />
     </div>
   )

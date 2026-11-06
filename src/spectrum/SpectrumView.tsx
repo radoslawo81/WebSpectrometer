@@ -8,6 +8,7 @@ import { extractVisible, updatePeakArea } from '../core/pipeline'
 import { valueToY, yToValue } from '../core/logScale'
 import { detectPeaks } from '../core/peaks'
 import { measureFwhm } from '../core/fwhm'
+import { getCompareReference } from '../app/compareStore'
 import { wavelengthToCss } from '../core/wavelengthColor'
 import { addPoint, clampBin, clampNm, nmToBin, removePoint } from '../core/calibration'
 
@@ -260,6 +261,40 @@ export const SpectrumView = forwardRef<HTMLCanvasElement | null, Props>(function
         }
         peakLabelsRef.current.push({ x, y: y2, nm, value: p.value })
       }
+    }
+
+    // Compare reference overlay (web-only): saved reference drawn as a dashed grey line,
+    // resampled onto the current wavelength axis; clipped at the top of the graph
+    const cmpRef = s.CompareOverlay ? getCompareReference() : null
+    if (cmpRef && cmpRef.nmMax > cmpRef.nmMin && win.length > 1) {
+      const rn = cmpRef.values.length
+      const refAt = (nm: number) => {
+        const f = ((nm - cmpRef.nmMin) * rn) / (cmpRef.nmMax - cmpRef.nmMin)
+        if (f < 0 || f > rn - 1) return NaN
+        const i = Math.floor(f)
+        const t = f - i
+        return i + 1 < rn ? cmpRef.values[i] * (1 - t) + cmpRef.values[i + 1] * t : cmpRef.values[i]
+      }
+      ctx.save()
+      ctx.strokeStyle = 'rgba(60,60,60,0.85)'
+      ctx.lineWidth = 1.2
+      ctx.setLineDash([5, 3])
+      ctx.beginPath()
+      let pen = false
+      for (let i = 0; i < win.length; i++) {
+        const v = refAt(nmAt(win.start + i))
+        if (!Number.isFinite(v)) {
+          pen = false
+          continue
+        }
+        const x = idxToX(i)
+        const y = Math.max(15, vToY(Math.min(v, maxV)))
+        if (pen) ctx.lineTo(x, y)
+        else ctx.moveTo(x, y)
+        pen = true
+      }
+      ctx.stroke()
+      ctx.restore()
     }
 
     // FWHM (web-only): measured on the raw samples, drawn as a bar at half maximum.
