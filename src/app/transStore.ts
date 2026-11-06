@@ -1,7 +1,9 @@
 // State for the Transmission window (web-only): dark and 100 % snapshots (memory only — they are
 // only valid for the current lamp/exposure), saved transmittance curves (localStorage).
 import { useSyncExternalStore } from 'react'
-import { computeTransmission, type Snapshot, type TransCurve } from '../core/transmission'
+import { computeTransmission, weightCurve, type Snapshot, type TransCurve } from '../core/transmission'
+import { responseAt } from '../core/responseCal'
+import { getLightResponse } from './lightStore'
 import { pipeline } from './engine'
 
 const SAVED_KEY = 'webspectrometer.transmissionCurves'
@@ -14,6 +16,7 @@ export interface SavedCurve {
   color: string
   visible: boolean
   curve: TransCurve
+  weight?: TransCurve // lamp spectrum (response-corrected if available) used for energy shares
   time: number
 }
 
@@ -29,7 +32,8 @@ function loadSaved(): SavedCurve[] {
     if (!raw) return []
     const arr = JSON.parse(raw) as SavedCurve[]
     // JSON stores NaN as null
-    return arr.map((c) => ({ ...c, curve: { ...c.curve, t: c.curve.t.map((v) => (v == null ? NaN : v)) } }))
+    const fix = (c?: TransCurve) => (c ? { ...c, t: c.t.map((v) => (v == null ? NaN : v)) } : undefined)
+    return arr.map((c) => ({ ...c, curve: fix(c.curve)!, weight: fix(c.weight) }))
   } catch {
     return []
   }
@@ -39,7 +43,13 @@ function persist(saved: SavedCurve[]) {
   try {
     localStorage.setItem(
       SAVED_KEY,
-      JSON.stringify(saved.map((c) => ({ ...c, curve: { ...c.curve, t: c.curve.t.map((v) => (Number.isFinite(v) ? Math.round(v * 10000) / 10000 : null)) } }))),
+      JSON.stringify(
+        saved.map((c) => ({
+          ...c,
+          curve: { ...c.curve, t: c.curve.t.map((v) => (Number.isFinite(v) ? Math.round(v * 10000) / 10000 : null)) },
+          weight: c.weight ? { ...c.weight, t: c.weight.t.map((v) => (Number.isFinite(v) ? Number(v.toPrecision(4)) : null)) } : undefined,
+        })),
+      ),
     )
   } catch {
     // ignore
@@ -83,13 +93,28 @@ export function liveCurve(): TransCurve | string | null {
   return computeTransmission(snap(), state.blank, state.dark)
 }
 
+// Lamp spectrum used to weight energy shares: 100 % − dark, × response correction if calibrated
+export function liveWeight(): TransCurve | null {
+  if (!state.blank) return null
+  const resp = getLightResponse()
+  return weightCurve(state.blank, state.dark, resp ? (nm) => responseAt(resp, nm) : undefined)
+}
+
 export function saveSample(label: string): string | null {
   const c = liveCurve()
   if (c == null) return 'no-blank'
   if (typeof c === 'string') return c
   const used = new Set(state.saved.map((s) => s.color))
   const color = CURVE_COLORS.find((x) => !used.has(x)) ?? CURVE_COLORS[state.saved.length % CURVE_COLORS.length]
-  const item: SavedCurve = { id: Date.now(), label: label || `Sample ${state.saved.length + 1}`, color, visible: true, curve: c, time: Date.now() }
+  const item: SavedCurve = {
+    id: Date.now(),
+    label: label || `Sample ${state.saved.length + 1}`,
+    color,
+    visible: true,
+    curve: c,
+    weight: liveWeight() ?? undefined,
+    time: Date.now(),
+  }
   const saved = [...state.saved, item].slice(-MAX_SAVED)
   persist(saved)
   set({ saved })

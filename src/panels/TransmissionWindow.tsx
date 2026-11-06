@@ -6,9 +6,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { FloatingWindow } from '../components/FloatingWindow'
 import { ToggleButton } from '../components/ToggleButton'
 import { useT } from '../i18n'
-import { clearDark, liveCurve, removeSaved, saveBlank, saveDark, saveSample, updateSaved, useTrans } from '../app/transStore'
+import { clearDark, liveCurve, liveWeight, removeSaved, saveBlank, saveDark, saveSample, updateSaved, useTrans } from '../app/transStore'
 import { FULL_SCALE } from '../app/lightStore'
-import { bandMeans, curveToCsv, daylightThrough, luminousTransmittance, swatches, type TransCurve } from '../core/transmission'
+import { bandMeans, curveToCsv, daylightThrough, luminousTransmittance, swatches, tAt, type TransCurve } from '../core/transmission'
 import { downloadText } from '../core/files'
 
 const POS_KEY = 'webspectrometer.transWindowPos'
@@ -128,12 +128,13 @@ export function TransmissionWindow({ onClose }: { onClose: () => void }) {
 
   const liveOk = live && typeof live !== 'string' ? live : null
   const focused: TransCurve | null = focus === 'live' ? liveOk : saved.find((s) => s.id === focus)?.curve ?? null
+  const focusedWeight: TransCurve | null = focus === 'live' ? (blank ? liveWeight() : null) : saved.find((s) => s.id === focus)?.weight ?? null
   const blankSaturated = blank ? Math.max(...blank.values) >= 0.97 * FULL_SCALE : false
 
   const results = useMemo(() => {
     if (!focused) return null
     return {
-      bands: bandMeans(focused),
+      bands: bandMeans(focused, focusedWeight ? (nm) => tAt(focusedWeight, nm) : undefined),
       lum: luminousTransmittance(focused),
       day: daylightThrough(focused),
       sw: swatches(focused),
@@ -142,7 +143,7 @@ export function TransmissionWindow({ onClose }: { onClose: () => void }) {
         return idx.length ? [focused.nmStart + idx[0], focused.nmStart + idx[idx.length - 1]] : null
       })(),
     }
-  }, [focused])
+  }, [focused, focusedWeight])
 
   const curves = [
     ...saved.filter((s) => s.visible).map((s) => ({ curve: s.curve, color: s.color, width: focus === s.id ? 2.2 : 1.3 })),
@@ -226,14 +227,28 @@ export function TransmissionWindow({ onClose }: { onClose: () => void }) {
                 <tr style={{ fontWeight: 'bold' }} title={t('Tr_TauVTip')}>
                   <td>{t('Tr_TauV')}</td>
                   <td style={{ textAlign: 'right' }}>{pct(results.lum.tauV)}</td>
+                  <td style={{ textAlign: 'right' }} title={t('Tr_VisBlockedTip')}>
+                    {results.lum.tauV != null ? `−${pct(1 - results.lum.tauV)}` : '—'}
+                  </td>
                   <td style={{ textAlign: 'right' }}>
                     {t('Tr_Category')} {catText(results.lum.category)}
                   </td>
+                </tr>
+                <tr style={{ fontSize: 11, color: 'rgb(90,90,90)', borderBottom: '1px solid rgb(200,200,200)' }}>
+                  <td>{t('Tr_Band')}</td>
+                  <td style={{ textAlign: 'right' }} title={t('Tr_MeanTip')}>
+                    {t('Tr_Mean')}
+                  </td>
+                  <td style={{ textAlign: 'right' }} title={t('Tr_EnergyTip')}>
+                    {t('Tr_Energy')}
+                  </td>
+                  <td />
                 </tr>
                 {results.bands.map((b) => (
                   <tr key={b.key}>
                     <td>{BAND_LABEL[b.key]} nm</td>
                     <td style={{ textAlign: 'right' }}>{pct(b.mean)}</td>
+                    <td style={{ textAlign: 'right' }}>{b.energyBlocked != null ? `−${pct(b.energyBlocked)}` : '—'}</td>
                     <td style={{ textAlign: 'right', color: 'rgb(120,120,120)', fontSize: 11 }}>
                       {b.coverage < 0.97 ? (b.coverage > 0 ? t('Tr_Partial').replace('{p}', Math.floor(b.coverage * 100).toString()) : t('Tr_NotMeasured')) : ''}
                     </td>

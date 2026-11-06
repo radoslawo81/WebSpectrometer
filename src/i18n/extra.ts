@@ -128,6 +128,12 @@ export const EXTRA_KEYS: Record<LangCode, Record<string, string>> = {
     Tr_RaTip: 'Colour rendering of daylight filtered by the lens (CIE 13.3, against a reference light of the same CCT)',
     Tr_SwatchTip: 'CIE test colours in daylight — top: without the lens, bottom: through the lens (eye not adapted)',
     Tr_Export: 'Export CSV',
+    Tr_Band: 'Band (nm)',
+    Tr_Mean: 'Mean T',
+    Tr_MeanTip: 'Mean transmittance over the band, every wavelength counted equally',
+    Tr_Energy: 'Energy blocked',
+    Tr_EnergyTip: 'Share of the light energy in the band removed by the sample, weighted by the spectrum of your lamp (corrected for camera sensitivity when the Light window has a response calibration)',
+    Tr_VisBlockedTip: 'Visible light removed as perceived by the eye: 1 − τv',
     Tr_Hint: 'Use the same lamp, exposure and position for all three steps. For UV use a lamp with UV (UV LED, sun), for IR a halogen lamp. Band values are plain means of T over the measurable part of each band.',
   },
   CHI: {

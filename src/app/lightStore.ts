@@ -66,6 +66,10 @@ export function useLight(): LightState {
   )
 }
 
+export function getLightResponse(): ResponseCalibration | null {
+  return state.response
+}
+
 export function setResponse(r: ResponseCalibration | null): void {
   save(RESP_KEY, r)
   set({ response: r })

@@ -105,24 +105,55 @@ export interface BandT {
   lo: number
   hi: number
   mean: number | null // mean T over the measurable part of the band (0–1)
+  energyBlocked: number | null // 1 − Σ w·T / Σ w: share of the light's energy in the band removed by the sample
   coverage: number // measurable fraction of the band (0–1)
 }
 
-export function bandMeans(c: TransCurve): BandT[] {
+// Optional weight w(λ): the spectral power of the light the sample is used with (here: the 100 % lamp
+// spectrum, response-corrected when available). Without it the energy share equals 1 − mean T.
+export function bandMeans(c: TransCurve, weight?: (nm: number) => number): BandT[] {
   return TRANS_BANDS.map((b) => {
     let acc = 0
     let cnt = 0
     let total = 0
+    let wt = 0
+    let w = 0
     for (let nm = b.lo; nm <= b.hi; nm++) {
       total++
       const v = tAt(c, nm)
       if (Number.isFinite(v)) {
         acc += v
         cnt++
+        const ww = weight ? weight(nm) : 1
+        if (Number.isFinite(ww) && ww > 0) {
+          wt += ww * Math.min(v, 1)
+          w += ww
+        }
       }
     }
-    return { key: b.key, lo: b.lo, hi: b.hi, mean: cnt ? acc / cnt : null, coverage: total ? cnt / total : 0 }
+    return {
+      key: b.key,
+      lo: b.lo,
+      hi: b.hi,
+      mean: cnt ? acc / cnt : null,
+      energyBlocked: w > 0 ? Math.max(0, 1 - wt / w) : null,
+      coverage: total ? cnt / total : 0,
+    }
   })
+}
+
+// 1 nm weight curve from the 100 % and dark snapshots (optionally multiplied by a response correction)
+export function weightCurve(blank: Snapshot, dark: Snapshot | null, response?: (nm: number) => number): TransCurve {
+  const lo = Math.ceil(blank.nmMin)
+  const hi = Math.floor(blank.nmMin + ((blank.nmMax - blank.nmMin) * (blank.values.length - 1)) / blank.values.length)
+  const t: number[] = []
+  for (let nm = lo; nm <= hi; nm++) {
+    const d = dark ? boxAt(dark, nm) : 0
+    const r = response ? response(nm) : 1
+    const v = (boxAt(blank, nm) - (Number.isFinite(d) ? d : 0)) * r
+    t.push(Number.isFinite(v) && v > 0 ? v : NaN)
+  }
+  return { nmStart: lo, t }
 }
 
 // T on the CIE 5 nm grid (NaN where not measurable)
