@@ -4,6 +4,7 @@ import { useSyncExternalStore } from 'react'
 import { applyResponse, calibrateResponse, type ResponseCalibration } from '../core/responseCal'
 import { lightMetrics, toCieGrid, type LightMetrics } from '../core/colorimetry'
 import { pipeline } from './engine'
+import { getState } from './store'
 
 const RESP_KEY = 'webspectrometer.responseCalibration'
 const LUX_KEY = 'webspectrometer.luxCalibration'
@@ -90,6 +91,21 @@ export interface CurrentLight {
   corrected: boolean
   saturated: boolean
   calibrated: boolean // wavelength calibration present
+  calibrationSuspect: boolean // calibration points imply very uneven dispersion (a misidentified line)
+}
+
+// A grating spectrometer is close to linear: nm per bin should not change much between calibration
+// segments. A ratio above 1.5 almost always means a calibration point was assigned to the wrong line.
+export function calibrationLooksWrong(): boolean {
+  const { bins, nms } = getState().calibration
+  if (!bins || bins.length < 3) return false
+  const slopes: number[] = []
+  for (let i = 0; i + 1 < bins.length; i++) {
+    const db = bins[i + 1] - bins[i]
+    if (db !== 0) slopes.push(Math.abs((nms[i + 1] - nms[i]) / db))
+  }
+  if (slopes.length < 2) return false
+  return Math.max(...slopes) / Math.min(...slopes) > 1.5
 }
 
 // Metrics of the spectrum shown now (response-corrected when a response calibration exists)
@@ -99,8 +115,9 @@ export function currentLight(): CurrentLight {
   let peak = 0
   for (let i = 0; i < v.length; i++) if (v[i] > peak) peak = v[i]
   const saturated = peak >= 0.97 * FULL_SCALE
-  if (!calibrated) return { metrics: null, corrected: false, saturated, calibrated }
+  const calibrationSuspect = calibrationLooksWrong()
+  if (!calibrated) return { metrics: null, corrected: false, saturated, calibrated, calibrationSuspect }
   const resp = state.response
   const spd = resp ? toCieGrid(applyResponse(v, nmMin, nmMax, resp), nmMin, nmMax) : toCieGrid(v, nmMin, nmMax)
-  return { metrics: lightMetrics(spd), corrected: !!resp, saturated, calibrated }
+  return { metrics: lightMetrics(spd), corrected: !!resp, saturated, calibrated, calibrationSuspect }
 }

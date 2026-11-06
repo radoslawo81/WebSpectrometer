@@ -113,8 +113,8 @@ export function LightWindow({ onClose }: { onClose: () => void }) {
             {row(t('Lq_CCT'), m?.cct ? `${fmt(m.cct)} K` : '—', t('Lq_CCTTip'), true)}
             {row('Duv', fmt(m?.duv, 4), t('Lq_DuvTip'))}
             {row('x, y (CIE 1931)', m ? `${fmt(m.x, 4)}, ${fmt(m.y, 4)}` : '—')}
-            {row('CRI Ra', criValid ? fmt(m?.cri?.Ra, 1) : '—', t('Lq_RaTip'), true)}
-            {row('R9', criValid ? fmt(m?.cri?.Ri[8], 1) : '—', t('Lq_R9Tip'))}
+            {row('CRI Ra', m?.cri ? `${fmt(m.cri.Ra, 1)}${criValid ? '' : ' *'}` : '—', t('Lq_RaTip'), true)}
+            {row('R9', m?.cri ? `${fmt(m.cri.Ri[8], 1)}${criValid ? '' : ' *'}` : '—', t('Lq_R9Tip'))}
             {row(t('Lq_LER'), m ? `${fmt(m.ler)} lm/W` : '—', t('Lq_LERTip'))}
             {row(t('Lq_Lux'), luxValue != null ? `${fmt(luxValue, luxValue < 100 ? 1 : 0)} lx` : '—', t('Lq_LuxTip'), true)}
             {lux.distance != null && row(t('Lq_Cd'), luxValue != null ? `${fmt(luxValue * lux.distance * lux.distance, 0)} cd` : '—', t('Lq_CdTip'))}
@@ -122,7 +122,7 @@ export function LightWindow({ onClose }: { onClose: () => void }) {
           </tbody>
         </table>
 
-        {criValid && m?.cri && (
+        {m?.cri && (
           <div>
             <a href="#" onClick={(e) => (e.preventDefault(), setShowAll((v) => !v))} style={{ fontSize: 11 }}>
               {showAll ? t('Lq_HideRi') : t('Lq_ShowRi')}
@@ -144,6 +144,7 @@ export function LightWindow({ onClose }: { onClose: () => void }) {
         {/* Warnings */}
         <div style={{ fontSize: 11, display: 'flex', flexDirection: 'column', gap: 2 }}>
           {!cur.calibrated && <span style={{ color: 'rgb(190,0,0)' }}>{t('Lq_WarnNoWl')}</span>}
+          {cur.calibrationSuspect && <span style={{ color: 'rgb(190,0,0)' }}>{t('Lq_WarnBadWl')}</span>}
           {cur.calibrated && !cur.corrected && <span style={{ color: 'rgb(190,0,0)' }}>{t('Lq_WarnNoResponse')}</span>}
           {cur.saturated && runtime.connected && <span style={{ color: 'rgb(190,0,0)' }}>{t('Lq_WarnSaturated')}</span>}
           {partial && m && (
