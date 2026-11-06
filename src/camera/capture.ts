@@ -155,3 +155,18 @@ export async function listVideoDevices(): Promise<MediaDeviceInfo[]> {
   const devices = await navigator.mediaDevices.enumerateDevices()
   return devices.filter((d) => d.kind === 'videoinput')
 }
+
+// Until the page has camera permission, browsers hide the device list: enumerateDevices()
+// returns at most one anonymous entry (empty deviceId/label), so only the system default
+// camera is reachable (e.g. the built-in FaceTime camera on a Mac, not a USB spectrometer).
+export function devicesNeedPermission(devices: MediaDeviceInfo[]): boolean {
+  return devices.length === 0 || devices.some((d) => !d.deviceId || !d.label)
+}
+
+// Ask for camera permission once (the stream is stopped right away), then return the full list.
+// Throws the getUserMedia error (NotAllowedError, NotFoundError, …) so the caller can explain it.
+export async function requestVideoDevices(): Promise<MediaDeviceInfo[]> {
+  const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+  for (const t of stream.getTracks()) t.stop()
+  return listVideoDevices()
+}
