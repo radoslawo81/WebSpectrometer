@@ -45,6 +45,9 @@ export interface PipelineState {
   background: Float64Array | null
   nmMin: number
   nmMax: number
+  // Web-only: per output sample, number of saturated ROI pixels in the sensor column it comes from
+  // (held for a few frames so that flicker does not hide it); null for files and TCD sensors
+  saturation: Uint16Array | null
   // Web-only: display spectrum before the response correction (Light/Transmission/halogen calibration use it)
   uncorrected: Float64Array
   respLut: Float64Array | null
@@ -69,6 +72,7 @@ export function createPipelineState(numSamples: number): PipelineState {
     resampled: new Float64Array(numSamples),
     spatialFiltered: new Float64Array(numSamples),
     uncorrected: new Float64Array(numSamples),
+    saturation: null,
     respLut: null,
     respLutKey: '',
     reference: null,
@@ -244,6 +248,24 @@ export function runDisplayStages(
       if (ref[i] > 0) v /= ref[i]
       out[i] = v
     }
+  }
+}
+
+// Web-only: map per-column clipped-pixel counts onto the output (nm) samples, with a short hold
+export function updateSaturation(state: PipelineState, clipped: Uint16Array | null, holdFrames = 8): void {
+  if (!clipped) {
+    state.saturation = null
+    return
+  }
+  const n = state.numSamples
+  if (!state.saturation || state.saturation.length !== n) state.saturation = new Uint16Array(n)
+  const sat = state.saturation
+  const lut = state.binLut
+  // Decay previous values (hold), then take the max with this frame
+  for (let i = 0; i < n; i++) {
+    const c = clipped[lut[i]] ?? 0
+    const held = sat[i] > 0 ? sat[i] - Math.max(1, Math.ceil(sat[i] / holdFrames)) : 0
+    sat[i] = c > held ? c : held
   }
 }
 

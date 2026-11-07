@@ -15,8 +15,13 @@ interface Props {
   className?: string
 }
 
+// Stacking order: a newly opened or clicked window comes to the front (web addition)
+let topZ = 2000
+const nextZ = () => ++topZ
+
 export function FloatingWindow({ title, x, y, width, height, magnetic, onMove, onClose, children, className }: Props) {
   const [drag, setDrag] = useState<{ dx: number; dy: number } | null>(null)
+  const [z, setZ] = useState(nextZ)
   const posRef = useRef({ x, y })
   posRef.current = { x, y }
 
@@ -45,7 +50,11 @@ export function FloatingWindow({ title, x, y, width, height, magnetic, onMove, o
   }, [drag, magnetic, width, onMove])
 
   return (
-    <div className={className ?? 'info-window'} style={{ left: x, top: y, width, height }}>
+    <div
+      className={className ?? 'info-window'}
+      style={{ left: x, top: y, width, height, zIndex: z }}
+      onMouseDownCapture={() => z !== topZ && setZ(nextZ())}
+    >
       <div
         className="info-window-title"
         onMouseDown={(e) => setDrag({ dx: e.clientX - posRef.current.x, dy: e.clientY - posRef.current.y })}

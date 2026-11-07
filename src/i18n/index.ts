@@ -9,10 +9,11 @@ import ENG from './locales/ENG.json'
 import FRA from './locales/FRA.json'
 import ITA from './locales/ITA.json'
 import POR from './locales/POR.json'
+import POL from './locales/POL.json'
 
-export type LangCode = 'ENG' | 'ITA' | 'FRA' | 'POR' | 'CHI' | 'CHT'
+export type LangCode = 'ENG' | 'ITA' | 'FRA' | 'POR' | 'CHI' | 'CHT' | 'POL'
 
-export const LANGUAGES: LangCode[] = ['ENG', 'ITA', 'FRA', 'POR', 'CHI', 'CHT']
+export const LANGUAGES: LangCode[] = ['ENG', 'ITA', 'FRA', 'POR', 'CHI', 'CHT', 'POL']
 
 const dicts: Record<LangCode, Record<string, string>> = {
   CHI: CHI as Record<string, string>,
@@ -21,6 +22,7 @@ const dicts: Record<LangCode, Record<string, string>> = {
   FRA: FRA as Record<string, string>,
   ITA: ITA as Record<string, string>,
   POR: POR as Record<string, string>,
+  POL: POL as Record<string, string>,
 }
 
 export function translate(lang: LangCode, key: string): string {

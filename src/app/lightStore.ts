@@ -66,6 +66,11 @@ export function useLight(): LightState {
   )
 }
 
+// Illuminance from a photometric sum (null without a lux calibration)
+export function getLux(photometricSum: number): number | null {
+  return state.lux.factor != null ? state.lux.factor * photometricSum : null
+}
+
 export function getLightResponse(): ResponseCalibration | null {
   return state.response
 }

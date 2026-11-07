@@ -41,6 +41,16 @@ export interface Settings {
   LightVisible: boolean // Web-only: Light quality window open
   TransVisible: boolean // Web-only: Transmission window open
   ResponseCorrected: boolean // Web-only: apply the halogen response correction to the spectrum
+  AutoCalVisible: boolean // Web-only windows open
+  LinesVisible: boolean
+  LogVisible: boolean
+  AbsVisible: boolean
+  HdrVisible: boolean
+  ReportVisible: boolean
+  LinesSets: string // Web-only: comma-separated line sets for overlay/identification
+  LinesOverlay: boolean
+  LinesIdentify: boolean
+  SecondOrder: boolean
   Colors: boolean
   TrimScale: boolean
   // Files
@@ -94,6 +104,16 @@ export const DEFAULT_SETTINGS: Settings = {
   LightVisible: false,
   TransVisible: false,
   ResponseCorrected: false,
+  AutoCalVisible: false,
+  LinesVisible: false,
+  LogVisible: false,
+  AbsVisible: false,
+  HdrVisible: false,
+  ReportVisible: false,
+  LinesSets: 'Hg,Ar,CFL',
+  LinesOverlay: false,
+  LinesIdentify: false,
+  SecondOrder: false,
   Colors: true,
   TrimScale: false,
   SpectrumFileSeparator: ';',
@@ -121,6 +141,7 @@ function detectBrowserLanguage(): string {
   if (lang.startsWith('it')) return 'ITA'
   if (lang.startsWith('fr')) return 'FRA'
   if (lang.startsWith('pt')) return 'POR'
+  if (lang.startsWith('pl')) return 'POL'
   if (lang.startsWith('en')) return 'ENG'
   return 'ENG'
 }

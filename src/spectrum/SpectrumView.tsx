@@ -9,6 +9,9 @@ import { valueToY, yToValue } from '../core/logScale'
 import { detectPeaks } from '../core/peaks'
 import { measureFwhm } from '../core/fwhm'
 import { getCompareReference } from '../app/compareStore'
+import { linesOf } from '../core/lines'
+import { identifyPeaks, secondOrderStart } from '../core/lineIdent'
+import { parseSets, SET_COLORS } from '../panels/LinesWindow'
 import { wavelengthToCss } from '../core/wavelengthColor'
 import { addPoint, clampBin, clampNm, nmToBin, removePoint } from '../core/calibration'
 
@@ -348,6 +351,143 @@ export const SpectrumView = forwardRef<HTMLCanvasElement | null, Props>(function
         ctx.fillText(label, lx + 3, y + 1)
       }
       ctx.textBaseline = 'alphabetic'
+    }
+
+    // Spectral lines (web-only): reference-line overlay, second-order markers/zone, peak identification
+    if (s.LinesOverlay || s.LinesIdentify || s.SecondOrder) {
+      const sets = parseSets(s.LinesSets)
+      const lo = nmAt(win.start)
+      const hi = nmAt(win.start + win.length - 1)
+      const plotTop = 15
+      ctx.save()
+      ctx.font = '9px Arial'
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'top'
+      if (s.SecondOrder) {
+        const so = secondOrderStart(pipeline.spatialFiltered, nmMin, nmMax)
+        if (so != null && so < hi) {
+          const xa = Math.max(DEST_LEFT, nmToX(so))
+          ctx.fillStyle = 'rgba(255,170,60,0.10)'
+          ctx.fillRect(xa, plotTop, W - xa, H - plotTop)
+          ctx.fillStyle = 'rgb(170,90,0)'
+          ctx.textAlign = 'left'
+          ctx.fillText(tRef.current('Ln_SecondLabel'), xa + 4, H - 28)
+          ctx.textAlign = 'center'
+        }
+      }
+      if (s.LinesOverlay || s.SecondOrder) {
+        let lastLabelX = -1e9
+        for (const l of linesOf(sets)) {
+          const col = SET_COLORS[l.set]
+          if (s.LinesOverlay && l.nm >= lo && l.nm <= hi) {
+            const x = Math.round(nmToX(l.nm)) + 0.5
+            ctx.strokeStyle = col
+            ctx.globalAlpha = 0.45
+            ctx.setLineDash(l.kind === 'absorption' ? [2, 3] : [])
+            ctx.beginPath()
+            ctx.moveTo(x, plotTop)
+            ctx.lineTo(x, H)
+            ctx.stroke()
+            ctx.globalAlpha = 1
+            if (x - lastLabelX > 34) {
+              ctx.fillStyle = col
+              ctx.fillText(`${l.label} ${l.nm.toFixed(1)}`, x, plotTop + 2)
+              lastLabelX = x
+            }
+          }
+          if (s.SecondOrder && l.kind === 'emission' && l.strength >= 5 && 2 * l.nm >= lo && 2 * l.nm <= hi) {
+            const x = Math.round(nmToX(2 * l.nm)) + 0.5
+            ctx.strokeStyle = col
+            ctx.globalAlpha = 0.6
+            ctx.setLineDash([4, 3])
+            ctx.beginPath()
+            ctx.moveTo(x, plotTop + 14)
+            ctx.lineTo(x, plotTop + 70)
+            ctx.stroke()
+            ctx.globalAlpha = 1
+            ctx.fillStyle = col
+            ctx.fillText(`2×${l.label}`, x, plotTop + 72)
+          }
+        }
+        ctx.setLineDash([])
+      }
+      if (s.LinesIdentify) {
+        const ids = identifyPeaks(pipeline.spatialFiltered, nmMin, nmMax, sets, s.SecondOrder, 25)
+        ctx.font = 'bold 10px Arial'
+        ctx.textBaseline = 'bottom'
+        for (const p of ids) {
+          if (!p.match || p.nm < lo || p.nm > hi) continue
+          const x = nmToX(p.nm)
+          const y = p.dip ? vToY(p.value) + 16 : vToY(p.value) - 4
+          const txt = `${p.match.order === 2 ? '2×' : ''}${p.match.line.label} ${p.match.line.nm.toFixed(1)}`
+          const tw = ctx.measureText(txt).width
+          ctx.fillStyle = 'rgba(255,255,255,0.75)'
+          ctx.fillRect(x - tw / 2 - 2, y - 12, tw + 4, 12)
+          ctx.fillStyle = SET_COLORS[p.match.line.set]
+          ctx.fillText(txt, x, y)
+        }
+      }
+      ctx.restore()
+    }
+
+    // Saturation (web-only): curve segments whose sensor column has clipped pixels are drawn red,
+    // with a warning listing the affected wavelengths
+    const sat = pipeline.saturation
+    if (sat && win.length > 1) {
+      const regions: { a: number; b: number }[] = []
+      let start = -1
+      for (let i = 0; i <= win.length; i++) {
+        const on = i < win.length && sat[win.start + i] >= 2
+        if (on && start < 0) start = i
+        if (!on && start >= 0) {
+          regions.push({ a: start, b: i - 1 })
+          start = -1
+        }
+      }
+      if (regions.length) {
+        ctx.save()
+        ctx.strokeStyle = 'rgb(230,0,0)'
+        ctx.lineWidth = 3
+        for (const r of regions) {
+          ctx.beginPath()
+          for (let i = Math.max(0, r.a - 1); i <= Math.min(win.length - 1, r.b + 1); i++) {
+            const x = idxToX(i)
+            const y = vToY(win.values[i])
+            if (i === Math.max(0, r.a - 1)) ctx.moveTo(x, y)
+            else ctx.lineTo(x, y)
+          }
+          ctx.stroke()
+        }
+        // Warning box: wavelengths of the strongest clipped regions
+        const labels = regions
+          .map((r) => {
+            let im = r.a
+            for (let i = r.a; i <= r.b; i++) if (win.values[i] > win.values[im]) im = i
+            return { nm: nmAt(win.start + im), v: win.values[im] }
+          })
+          .sort((p1, p2) => p2.v - p1.v)
+          .slice(0, 6)
+          .map((l) => l.nm.toFixed(0))
+          .sort((x1, x2) => Number(x1) - Number(x2))
+        const text = `${tRef.current('Sat_Warning')} ${labels.join(', ')} nm${regions.length > 6 ? ', …' : ''}`
+        ctx.font = 'bold 12px Arial'
+        ctx.textBaseline = 'middle'
+        ctx.textAlign = 'left'
+        const tw = ctx.measureText(text).width
+        const bx = DEST_LEFT + 8
+        const by = 22
+        ctx.fillStyle = 'rgba(255,235,235,0.95)'
+        ctx.fillRect(bx, by, tw + 12, 20)
+        ctx.strokeStyle = 'rgb(200,0,0)'
+        ctx.lineWidth = 1
+        ctx.strokeRect(bx + 0.5, by + 0.5, tw + 11, 19)
+        ctx.fillStyle = 'rgb(180,0,0)'
+        ctx.fillText(text, bx + 6, by + 10)
+        ctx.font = '11px Arial'
+        ctx.fillStyle = 'rgb(120,40,40)'
+        ctx.fillText(tRef.current('Sat_Hint'), bx + 2, by + 32)
+        ctx.restore()
+      }
     }
 
     // Calibration labels (when Trim scale is on; see interaction handlers for dragging/add/delete)

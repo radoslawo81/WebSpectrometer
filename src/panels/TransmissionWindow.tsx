@@ -17,14 +17,14 @@ const CHART_H = 190
 const PAD = { l: 34, r: 8, t: 8, b: 20 }
 
 const pct = (v: number | null | undefined, d = 1) => (v == null || !Number.isFinite(v) ? '—' : `${(v * 100).toFixed(d)} %`)
-const BAND_LABEL: Record<string, string> = {
-  UVB: 'UV-B 280–315',
-  UVA: 'UV-A 315–380',
-  HEV: 'HEV blue 400–455',
-  B: 'Blue 400–500',
-  G: 'Green 500–600',
-  R: 'Red 600–700',
-  IR: 'Near IR 780–1000',
+const BAND_RANGE: Record<string, string> = {
+  UVB: '280–315',
+  UVA: '315–380',
+  HEV: '400–455',
+  B: '400–500',
+  G: '500–600',
+  R: '600–700',
+  IR: '780–1000',
 }
 
 function Chart({ curves, od }: { curves: { curve: TransCurve; color: string; width: number }[]; od: boolean }) {
@@ -153,7 +153,7 @@ export function TransmissionWindow({ onClose }: { onClose: () => void }) {
   const doSave = () => {
     const err = saveSample(label.trim())
     if (err === 'no-blank') setMsg(t('Tr_NeedBlank'))
-    else if (err) setMsg(err)
+    else if (err) setMsg(t(err))
     else {
       setMsg(t('Tr_Saved'))
       setLabel('')
@@ -213,7 +213,7 @@ export function TransmissionWindow({ onClose }: { onClose: () => void }) {
         <div style={{ fontSize: 11, display: 'flex', flexDirection: 'column', gap: 2 }}>
           {!blank && <span style={{ color: 'rgb(160,90,0)' }}>{t('Tr_NeedBlank')}</span>}
           {blankSaturated && <span style={{ color: 'rgb(190,0,0)' }}>{t('Tr_WarnSat')}</span>}
-          {typeof live === 'string' && <span style={{ color: 'rgb(190,0,0)' }}>{live}</span>}
+          {typeof live === 'string' && <span style={{ color: 'rgb(190,0,0)' }}>{t(live)}</span>}
           {results?.range && (results.range[0] > 380 || results.range[1] < 780) && (
             <span style={{ color: 'rgb(160,90,0)' }}>{t('Tr_WarnRange').replace('{range}', `${results.range[0]}–${results.range[1]}`)}</span>
           )}
@@ -246,7 +246,7 @@ export function TransmissionWindow({ onClose }: { onClose: () => void }) {
                 </tr>
                 {results.bands.map((b) => (
                   <tr key={b.key}>
-                    <td>{BAND_LABEL[b.key]} nm</td>
+                    <td>{t(`Tr_Band_${b.key}`)} {BAND_RANGE[b.key]} nm</td>
                     <td style={{ textAlign: 'right' }}>{pct(b.mean)}</td>
                     <td style={{ textAlign: 'right' }}>{b.energyBlocked != null ? `−${pct(b.energyBlocked)}` : '—'}</td>
                     <td style={{ textAlign: 'right', color: 'rgb(120,120,120)', fontSize: 11 }}>

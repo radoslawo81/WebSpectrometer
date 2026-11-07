@@ -23,7 +23,7 @@ export function FilesPanel() {
       </div>
       <div className="field-row" style={{ color: 'rgb(120,120,120)' }}>
         {/* The original program has a path box here; the Web version shows a drag-and-drop hint */}
-        <span>Drop .txt / .csv here to load a spectrum</span>
+        <span>{t('Msg_DropHint')}</span>
       </div>
     </div>
   )

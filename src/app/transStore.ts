@@ -63,6 +63,10 @@ function set(patch: Partial<TransState>) {
   for (const l of listeners) l()
 }
 
+export function getTransState(): TransState {
+  return state
+}
+
 export function useTrans(): TransState {
   return useSyncExternalStore(
     (l) => {

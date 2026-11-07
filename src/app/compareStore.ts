@@ -41,6 +41,10 @@ export function useCompare(): CompareState {
   )
 }
 
+export function getCompareState(): CompareState {
+  return state
+}
+
 export function getCompareReference(): SpectrumSnapshot | null {
   return state.reference
 }

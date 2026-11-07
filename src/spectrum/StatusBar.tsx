@@ -23,7 +23,7 @@ export function StatusBar({ measure }: { measure: SpectrumMeasure | null }) {
   const measureText = runtime.trimInfo
     ? runtime.trimInfo
     : measure
-      ? `${measure.mode === 'value' ? 'Value' : 'Max'} ${Math.round(measure.value)} @ ${measure.nm.toFixed(1)} nm   Peak area ${formatPeakArea(measure.peakArea)}`
+      ? `${measure.mode === 'value' ? t('St_Value') : t('St_Max')} ${Math.round(measure.value)} @ ${measure.nm.toFixed(1)} nm   ${t('St_PeakArea')} ${formatPeakArea(measure.peakArea)}`
       : ''
 
   return (
@@ -47,6 +47,13 @@ export function StatusBar({ measure }: { measure: SpectrumMeasure | null }) {
       </ToggleButton>
       <ToggleButton active={settings.Fwhm} title={t('Tip_Fwhm')} onClick={() => setSettings({ Fwhm: !settings.Fwhm })}>
         {t('btn_Fwhm')}
+      </ToggleButton>
+      <ToggleButton
+        active={settings.LinesVisible || settings.LinesOverlay || settings.LinesIdentify}
+        title={t('Tip_Lines')}
+        onClick={() => setSettings({ LinesVisible: !settings.LinesVisible })}
+      >
+        {t('btn_Lines')}
       </ToggleButton>
       <ToggleButton
         active={settings.ResponseCorrected && !!response}

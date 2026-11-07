@@ -4,7 +4,7 @@
 // All strings come from i18n (web-only keys in src/i18n/extra.ts);
 // the menu path is composed from the existing menu translation keys so it
 // always matches the current UI language.
-import { setRuntime, useAppState } from '../app/store'
+import { setRuntime, setSettings, useAppState } from '../app/store'
 import { useT } from '../i18n'
 
 export function CalibrationHint({ onCalibrate }: { onCalibrate: () => void }) {
@@ -41,6 +41,17 @@ export function CalibrationHint({ onCalibrate }: { onCalibrate: () => void }) {
         style={{ whiteSpace: 'nowrap' }}
       >
         {t('Msg_CalibrateNow')}
+      </button>
+      <button
+        type="button"
+        className="toggle-btn toggle-btn-active"
+        onClick={() => {
+          setSettings({ AutoCalVisible: true })
+          setRuntime({ showCalibrationHint: false })
+        }}
+        style={{ whiteSpace: 'nowrap' }}
+      >
+        {t('Msg_AutoCalibrate')}
       </button>
       <button
         type="button"

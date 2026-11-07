@@ -50,7 +50,7 @@ function boxAt(s: Snapshot, nm: number): number {
 }
 
 export function computeTransmission(sample: Snapshot, blank: Snapshot, dark: Snapshot | null): TransCurve | string {
-  if (!(blank.nmMax > blank.nmMin)) return 'Spectrum not calibrated in wavelength'
+  if (!(blank.nmMax > blank.nmMin)) return 'Err_Uncal'
   const lo = Math.ceil(Math.max(sample.nmMin, blank.nmMin))
   const hi = Math.floor(
     Math.min(
@@ -58,7 +58,7 @@ export function computeTransmission(sample: Snapshot, blank: Snapshot, dark: Sna
       blank.nmMin + ((blank.nmMax - blank.nmMin) * (blank.values.length - 1)) / blank.values.length,
     ),
   )
-  if (!(hi > lo)) return 'No common wavelength range'
+  if (!(hi > lo)) return 'Err_NoOverlap'
   const nms: number[] = []
   const b: number[] = []
   const s: number[] = []
@@ -69,7 +69,7 @@ export function computeTransmission(sample: Snapshot, blank: Snapshot, dark: Sna
     s.push(boxAt(sample, nm) - (Number.isFinite(d) ? d : 0))
   }
   const bMax = Math.max(...b.filter(Number.isFinite))
-  if (!(bMax > 0)) return 'No signal in the 100 % spectrum'
+  if (!(bMax > 0)) return 'Err_NoBlank'
   const t = b.map((bv, i) => (bv >= MIN_BLANK * bMax ? Math.max(0, s[i]) / bv : NaN))
   return { nmStart: lo, t }
 }

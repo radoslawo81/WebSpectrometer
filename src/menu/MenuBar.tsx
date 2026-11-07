@@ -16,6 +16,7 @@ import flagITA from './icons/flagITA.png'
 import flagFRA from './icons/flagFRA.png'
 import flagPOR from './icons/flagPOR.png'
 import flagCHI from './icons/flagCHI.png'
+import flagPOL from './icons/flagPOL.png' // web addition
 
 // Language menu flags per Form1.resx (CHT is a web addition — it reuses the CHI flag)
 const LANGUAGE_FLAGS: Record<string, string> = {
@@ -25,6 +26,7 @@ const LANGUAGE_FLAGS: Record<string, string> = {
   POR: flagPOR,
   CHI: flagCHI,
   CHT: flagCHI,
+  POL: flagPOL,
 }
 
 interface MenuDef {
@@ -75,6 +77,8 @@ export function MenuBar({ onAbout }: { onAbout: () => void }) {
           {item(t('MenuFile_SaveCalibrationAs'), () => saveCalibrationAs(), undefined, icoSaveCalibrationAs)}
           <div className="menu-separator" />
           {item(t('MenuFile_LoadIrradianceCoeffs'), () => void loadIrradianceFile(), undefined, icoLoadIrradianceCoeffs)}
+          <div className="menu-separator" />
+          {item(t('Menu_Report'), () => setSettings({ ReportVisible: true }))}
         </>
       ),
     },
@@ -83,6 +87,12 @@ export function MenuBar({ onAbout }: { onAbout: () => void }) {
       label: t('Menu_Tools'),
       items: (
         <>
+          {item(t('Menu_AutoCal'), () => setSettings({ AutoCalVisible: true }), settings.AutoCalVisible)}
+          {item(t('Menu_Lines'), () => setSettings({ LinesVisible: true }), settings.LinesVisible)}
+          {item(t('Menu_Log'), () => setSettings({ LogVisible: true }), settings.LogVisible)}
+          {item(t('Menu_Abs'), () => setSettings({ AbsVisible: true }), settings.AbsVisible)}
+          {item(t('Menu_Hdr'), () => setSettings({ HdrVisible: true }), settings.HdrVisible)}
+          <div className="menu-separator" />
           {sub(
             t('Menu_Tools_SensorType'),
             <>

@@ -15,6 +15,7 @@ import {
   createPipelineState,
   processFrame,
   runDisplayStages,
+  updateSaturation,
   snapshotBackground,
   snapshotReference,
   resetSpectrumData,
@@ -116,6 +117,7 @@ camera.onFrame = (frame) => {
   }
 
   processFrame(pipeline, frame.samples, params, getState().calibration, irradiance)
+  updateSaturation(pipeline, frame.clipped)
 
   if (pipeline.averageCounter !== getState().runtime.averageCounter) {
     setRuntime({ averageCounter: pipeline.averageCounter })

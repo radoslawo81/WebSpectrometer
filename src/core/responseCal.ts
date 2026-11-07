@@ -28,7 +28,7 @@ export function calibrateResponse(
   lampT: number,
 ): ResponseCalibration | string {
   const n = values.length
-  if (!(nmMax > nmMin) || n < 10) return 'Spectrum not calibrated in wavelength'
+  if (!(nmMax > nmMin) || n < 10) return 'Err_Uncal'
   const step = (nmMax - nmMin) / n
   const at = (nm: number) => {
     // boxcar average of the measurement around nm
@@ -51,7 +51,7 @@ export function calibrateResponse(
     meas.push(at(nm))
   }
   const mMax = Math.max(...meas.filter(Number.isFinite))
-  if (!(mMax > 0)) return 'No signal'
+  if (!(mMax > 0)) return 'Err_NoSignal'
   const raw = nms.map((nm, i) => (meas[i] >= MIN_SIGNAL * mMax ? planck(nm, lampT) / meas[i] : NaN))
   // Keep only the contiguous valid range around the signal maximum
   const iMax = meas.indexOf(mMax)
@@ -130,7 +130,7 @@ export function responseFromText(text: string): ResponseCalibration | string {
     nms.push(nm)
     coeffs.push(c)
   }
-  if (nms.length < 2) return 'No valid "nm coeff" lines'
+  if (nms.length < 2) return 'Err_RespFile'
   // Resample to the 1 nm grid
   const lo = Math.ceil(nms[0])
   const hi = Math.floor(nms[nms.length - 1])

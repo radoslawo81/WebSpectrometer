@@ -78,7 +78,7 @@ export function LightWindow({ onClose }: { onClose: () => void }) {
   const doResponseCal = () => {
     if (!lampT) return setMsg(t('Lq_EnterLampT'))
     const err = calibrateResponseFromCurrent(lampT)
-    setMsg(err ?? t('Lq_ResponseDone'))
+    setMsg(err ? t(err) : t('Lq_ResponseDone'))
   }
   const doLuxCal = () => {
     if (!luxMeter) return setMsg(t('Lq_EnterLux'))
@@ -90,7 +90,7 @@ export function LightWindow({ onClose }: { onClose: () => void }) {
     const f = await pickFile('.txt')
     if (!f) return
     const r = responseFromText(await f.text())
-    if (typeof r === 'string') setMsg(r)
+    if (typeof r === 'string') setMsg(t(r))
     else {
       setResponse(r)
       setMsg(t('Lq_ResponseLoaded'))

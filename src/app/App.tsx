@@ -9,6 +9,12 @@ import { VideoControlsWindow } from '../panels/VideoControlsWindow'
 import { CompareWindow } from '../panels/CompareWindow'
 import { LightWindow } from '../panels/LightWindow'
 import { TransmissionWindow } from '../panels/TransmissionWindow'
+import { AutoCalWindow } from '../panels/AutoCalWindow'
+import { LinesWindow } from '../panels/LinesWindow'
+import { LogWindow } from '../panels/LogWindow'
+import { AbsorbanceWindow } from '../panels/AbsorbanceWindow'
+import { HdrWindow } from '../panels/HdrWindow'
+import { ReportWindow } from '../panels/ReportWindow'
 import { FiltersPanel } from '../panels/FiltersPanel'
 import { FilesPanel } from '../panels/FilesPanel'
 import { SensorSamplesPanel } from '../panels/SensorSamplesPanel'
@@ -127,6 +133,12 @@ export function App() {
       {settings.CompareVisible && <CompareWindow onClose={() => setSettings({ CompareVisible: false })} />}
       {settings.LightVisible && <LightWindow onClose={() => setSettings({ LightVisible: false })} />}
       {settings.TransVisible && <TransmissionWindow onClose={() => setSettings({ TransVisible: false })} />}
+      {settings.AutoCalVisible && <AutoCalWindow onClose={() => setSettings({ AutoCalVisible: false })} />}
+      {settings.LinesVisible && <LinesWindow onClose={() => setSettings({ LinesVisible: false })} />}
+      {settings.LogVisible && <LogWindow onClose={() => setSettings({ LogVisible: false })} />}
+      {settings.AbsVisible && <AbsorbanceWindow onClose={() => setSettings({ AbsVisible: false })} />}
+      {settings.HdrVisible && <HdrWindow onClose={() => setSettings({ HdrVisible: false })} />}
+      {settings.ReportVisible && <ReportWindow onClose={() => setSettings({ ReportVisible: false })} />}
       <CalibrationHint onCalibrate={() => applyTrimPreset(1000, 2000, 436, 546)} />
     </div>
   )

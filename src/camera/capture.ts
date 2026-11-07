@@ -9,6 +9,7 @@ export interface RoiConfig {
 
 export interface FrameResult {
   samples: Float64Array // Per-column luminance 0~255, length = image width
+  clipped: Uint16Array // Web-only: per column, number of ROI pixels with a colour channel at 254–255 (saturated)
   roiImage: ImageData // ROI strip (for preview; cropped, no AGC applied)
   width: number
   height: number
@@ -139,15 +140,20 @@ export class CameraCapture {
 
     // ③ Per-column luminance BT.601: v[x] = Σrows(0.299R+0.587G+0.114B)/SrcDY
     const samples = new Float64Array(w)
+    const clipped = new Uint16Array(w)
     for (let y = 0; y < srcDY; y++) {
       let p = y * w * 4
       for (let x = 0; x < w; x++, p += 4) {
-        samples[x] += 0.299 * data[p] + 0.587 * data[p + 1] + 0.114 * data[p + 2]
+        const r = data[p]
+        const g = data[p + 1]
+        const b = data[p + 2]
+        samples[x] += 0.299 * r + 0.587 * g + 0.114 * b
+        if (r >= 254 || g >= 254 || b >= 254) clipped[x]++
       }
     }
     for (let x = 0; x < w; x++) samples[x] /= srcDY
 
-    this.onFrame?.({ samples, roiImage: img, width: w, height: h })
+    this.onFrame?.({ samples, clipped, roiImage: img, width: w, height: h })
   }
 }
 
