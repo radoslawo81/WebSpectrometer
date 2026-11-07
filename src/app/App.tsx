@@ -23,6 +23,7 @@ import { InfoWindow } from '../info/InfoWindow'
 import { SpectrumView, type SpectrumMeasure } from '../spectrum/SpectrumView'
 import { StatusBar } from '../spectrum/StatusBar'
 import { setSettings, useAppState } from './store'
+import { useT } from '../i18n'
 import { loadDataText } from '../core/files'
 import { initAverageAutosave, readLastSpectrum } from './averageAutosave'
 import { applyTrimPreset, connectCamera } from './engine'
@@ -153,7 +154,11 @@ export function App() {
   )
 }
 
+const REPO_URL = 'https://github.com/radoslawo81/WebSpectrometer'
+const SITE_URL = 'https://radoslawo81.github.io/WebSpectrometer/'
+
 function AboutDialog({ onClose }: { onClose: () => void }) {
+  const t = useT()
   return (
     <div
       style={{
@@ -173,23 +178,30 @@ function AboutDialog({ onClose }: { onClose: () => void }) {
         onClick={(e) => e.stopPropagation()}
       >
         <img src={aboutLogo} alt="" draggable={false} style={{ width: 53, height: 50, objectFit: 'contain' }} />
-        <h3 style={{ marginBottom: 10 }}>Spectrometer</h3>
-        <p style={{ margin: '8px 0' }}>Visible, UVA and near-infrared spectrometer running in your browser</p>
+        <h3 style={{ marginBottom: 4 }}>WebSpectrometer</h3>
+        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 10 }}>
+          {t('About_Version')} {__APP_VERSION__}
+        </div>
+        <p style={{ margin: '8px 0' }}>{t('Msg_About')}</p>
         <p style={{ margin: '8px 0', fontSize: 11, color: 'var(--text-muted)' }}>
-          A fork of Theremino Spectrometer V5.0 that runs in the browser — special thanks to{' '}
-          <a href="https://www.theremino.com" target="_blank" rel="noreferrer">
-            theremino.com
+          {t('About_Based1')}{' '}
+          <a href="https://www.theremino.com/en/downloads/automation#spectrometer" target="_blank" rel="noreferrer">
+            Theremino Spectrometer V5.0
+          </a>{' '}
+          {t('About_Based2')}{' '}
+          <a href="https://github.com/jayden-sudo/WebSpectrometer" target="_blank" rel="noreferrer">
+            jayden-sudo/WebSpectrometer
+          </a>
+          .
+        </p>
+        <p style={{ margin: '8px 0', fontSize: 11, color: 'var(--text-muted)' }}>{t('About_Credits')}</p>
+        <p style={{ margin: '8px 0', fontSize: 12 }}>
+          <a href={REPO_URL} target="_blank" rel="noreferrer" style={{ fontWeight: 600 }}>
+            github.com/radoslawo81/WebSpectrometer
           </a>
           <br />
-          An AI-assisted implementation by the author
-        </p>
-        <p style={{ margin: '8px 0', fontSize: 11 }}>
-          <a href="https://github.com/jayden-sudo/WebSpectrometer" target="_blank" rel="noreferrer">
-            GitHub
-          </a>
-          {' · '}
-          <a href="https://x.com/jayden_sudo" target="_blank" rel="noreferrer">
-            @jayden_sudo
+          <a href={SITE_URL} target="_blank" rel="noreferrer">
+            radoslawo81.github.io/WebSpectrometer
           </a>
           {' · GNU GPL'}
         </p>
@@ -197,7 +209,7 @@ function AboutDialog({ onClose }: { onClose: () => void }) {
           <p style={{ margin: '8px 0', fontSize: 11, color: 'var(--text-muted)' }}>
             Build:{' '}
             <a
-              href={`https://github.com/jayden-sudo/WebSpectrometer/commit/${__COMMIT_SHA__}`}
+              href={`${REPO_URL}/commit/${__COMMIT_SHA__}`}
               target="_blank"
               rel="noreferrer"
               style={{ fontFamily: 'monospace' }}

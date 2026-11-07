@@ -1,5 +1,9 @@
 // Polish translations of the web-only keys (EXTRA_KEYS.ENG). Web addition.
 export const POL_EXTRA: Record<string, string> = {
+  About_Version: "Wersja",
+  About_Based1: "Program powstał na bazie",
+  About_Based2: "oraz jego wersji przeglądarkowej",
+  About_Credits: "Nowe funkcje tego forka (wraz z kodem) wykonał Claude (AI firmy Anthropic) na podstawie pomysłów, wymagań i pomiarów Radka (radoslawo81).",
   btn_Controls: "Kamera i filtry",
   Tip_Controls: "Pokaż lub ukryj panele Urządzenie wideo i Filtry (połącz / rozłącz kamerę, uśrednianie, odniesienie, tło)",
   Lq_Details: "Kalibracja i szczegóły…",
