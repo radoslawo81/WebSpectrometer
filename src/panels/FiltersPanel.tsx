@@ -19,7 +19,7 @@ export function FiltersPanel() {
       <div className="field-row">
         <ToggleButton
           active={avgActive}
-          activeBackground={avgActive ? 'rgb(255,210,120)' : undefined}
+          activeBackground={avgActive ? '#d97706' : undefined}
           onClick={() => setSettings({ AverageEnabled: !avgActive })}
           style={{ minWidth: 70 }}
         >
@@ -28,7 +28,7 @@ export function FiltersPanel() {
         <select
           value={settings.Average}
           onChange={(e) => setSettings({ Average: Number(e.target.value) })}
-          style={{ width: 64, background: avgActive ? undefined : 'rgb(211,211,211)' }}
+          style={{ width: 64, background: avgActive ? undefined : '#e2e8f0' }}
         >
           {AVERAGE_OPTIONS.map((v, i) => (
             <option key={v} value={i}>

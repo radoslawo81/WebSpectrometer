@@ -48,7 +48,7 @@ export function LinesWindow({ onClose }: { onClose: () => void }) {
             </label>
           ))}
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 2, borderTop: '1px solid rgb(210,200,170)', paddingTop: 4 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2, borderTop: '1px solid var(--border)', paddingTop: 4 }}>
           <label>
             <input type="checkbox" checked={settings.LinesOverlay} onChange={(e) => setSettings({ LinesOverlay: e.target.checked })} /> {t('Ln_Overlay')}
           </label>
@@ -62,10 +62,10 @@ export function LinesWindow({ onClose }: { onClose: () => void }) {
         {settings.SecondOrder && so != null && (
           <div style={{ fontSize: 11, color: 'rgb(140,80,0)' }}>{t('Ln_SecondZone').replace('{nm}', so.toFixed(0))}</div>
         )}
-        <div style={{ maxHeight: 220, overflowY: 'auto', border: '1px solid rgb(210,200,170)' }}>
+        <div style={{ maxHeight: 220, overflowY: 'auto', border: '1px solid var(--border)' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
             <thead>
-              <tr style={{ background: 'rgba(255,255,255,0.6)' }}>
+              <tr style={{ background: 'var(--surface-2)' }}>
                 <th style={{ textAlign: 'right' }}>{t('Ln_Measured')}</th>
                 <th style={{ textAlign: 'left', paddingLeft: 8 }}>{t('Ln_Match')}</th>
                 <th style={{ textAlign: 'right' }}>Δ nm</th>
@@ -86,7 +86,7 @@ export function LinesWindow({ onClose }: { onClose: () => void }) {
             </tbody>
           </table>
         </div>
-        <div style={{ fontSize: 10, color: 'rgb(120,120,120)' }}>{t('Ln_Hint')}</div>
+        <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{t('Ln_Hint')}</div>
       </div>
     </FloatingWindow>
   )

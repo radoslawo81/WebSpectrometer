@@ -68,7 +68,7 @@ export function AutoCalWindow({ onClose }: { onClose: () => void }) {
   return (
     <FloatingWindow title={t('Ac_Title')} x={pos.x} y={pos.y} width={470} onMove={onMove} onClose={onClose} className="compare-window">
       <div style={{ padding: 8, display: 'flex', flexDirection: 'column', gap: 6, fontSize: 12 }}>
-        <div style={{ fontSize: 11, color: 'rgb(90,90,90)' }}>{t('Ac_Intro')}</div>
+        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{t('Ac_Intro')}</div>
         <div className="field-row" style={{ gap: 6 }}>
           <select value={source} onChange={(e) => setSource(e.target.value)} style={{ flex: 1 }}>
             {CAL_SOURCES.map((s) => (
@@ -95,10 +95,10 @@ export function AutoCalWindow({ onClose }: { onClose: () => void }) {
                   .replace('{hi}', res.rangeNm[1].toFixed(0))}
               </div>
             )}
-            <div style={{ maxHeight: 260, overflowY: 'auto', border: '1px solid rgb(210,200,170)' }}>
+            <div style={{ maxHeight: 260, overflowY: 'auto', border: '1px solid var(--border)' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
                 <thead>
-                  <tr style={{ background: 'rgba(255,255,255,0.6)' }}>
+                  <tr style={{ background: 'var(--surface-2)' }}>
                     <th title={t('Ac_UseTip')}>{t('Ac_Use')}</th>
                     <th style={{ textAlign: 'left' }}>{t('Ac_Line')}</th>
                     <th style={{ textAlign: 'right' }}>nm</th>
@@ -145,7 +145,7 @@ export function AutoCalWindow({ onClose }: { onClose: () => void }) {
             {applied && response && <div style={{ color: 'rgb(160,90,0)', fontSize: 11 }}>{t('Ac_RedoResponse')}</div>}
           </>
         )}
-        <div style={{ fontSize: 10, color: 'rgb(120,120,120)' }}>{t('Ac_Hint')}</div>
+        <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{t('Ac_Hint')}</div>
       </div>
     </FloatingWindow>
   )

@@ -1,4 +1,25 @@
-/* Global styles — all colors taken from the original source (TECHNICAL_GUIDE §3.1) */
+/* Global styles. Web fork: modern "scientific instrument" theme (cool neutrals, one blue accent,
+   white plot area). Layout follows the original program (TECHNICAL_GUIDE §3.1); colours are tokens. */
+
+:root {
+  --bg: #eef1f5;
+  --surface: #ffffff;
+  --surface-2: #f6f8fb;
+  --border: #d5dbe3;
+  --border-strong: #b4bfcc;
+  --text: #1e2733;
+  --text-muted: #5b6878;
+  --accent: #1d5fd1;
+  --accent-hover: #174fb0;
+  --accent-soft: #e5eefc;
+  --warn-soft: #fde9b8;
+  --menu-bar: #1f2937;
+  --menu-text: #e5e9f0;
+  --shadow: 0 6px 20px rgba(15, 23, 42, 0.16), 0 1px 3px rgba(15, 23, 42, 0.12);
+  --radius: 6px;
+  --font: 'Inter', 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  --mono: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
+}
 
 * {
   box-sizing: border-box;
@@ -13,10 +34,12 @@ body,
 }
 
 body {
-  font-family: Tahoma, 'Segoe UI', sans-serif;
+  font-family: var(--font);
   font-size: 12px;
-  color: rgb(40, 40, 40);
-  background: rgb(240, 240, 240);
+  color: var(--text);
+  background: var(--bg);
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
   overflow: hidden;
   user-select: none;
 }
@@ -27,22 +50,23 @@ body {
   height: 100%;
 }
 
-/* Menu bar: horizontal gradient RGB(230,230,230) → (200,200,200) */
+/* Menu bar: dark instrument header */
 .menu-bar {
   display: flex;
-  background: linear-gradient(to right, rgb(230, 230, 230), rgb(200, 200, 200));
-  border-bottom: 1px solid rgb(180, 180, 180);
+  background: var(--menu-bar);
+  color: var(--menu-text);
+  border-bottom: 1px solid #111827;
 }
 
 .menu-item {
-  padding: 4px 10px;
+  padding: 5px 12px;
   cursor: default;
   position: relative;
 }
 
 .menu-item:hover,
 .menu-item.open {
-  background: rgb(255, 248, 220);
+  background: #374151;
 }
 
 .menu-dropdown {
@@ -50,11 +74,13 @@ body {
   top: 100%;
   left: 0;
   min-width: 220px;
-  background: rgb(255, 248, 220); /* Cornsilk */
-  border: 1px solid rgb(160, 160, 160);
-  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
   z-index: 1000;
-  padding: 2px 0;
+  padding: 4px 0;
 }
 
 .menu-dropdown-item {
@@ -65,7 +91,8 @@ body {
 }
 
 .menu-dropdown-item:hover {
-  background: rgb(255, 231, 162);
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 
 .menu-dropdown-item.checked::before {
@@ -91,13 +118,13 @@ body {
 }
 
 .menu-dropdown-item.checked.has-icon {
-  background: rgb(255, 231, 162);
+  background: var(--accent-soft);
 }
 
 .menu-separator {
   height: 1px;
-  background: rgb(200, 200, 200);
-  margin: 3px 6px;
+  background: var(--border);
+  margin: 4px 8px;
 }
 
 .menu-submenu-arrow::after {
@@ -111,10 +138,11 @@ body {
   left: 100%;
   top: -3px;
   min-width: 180px;
-  background: rgb(255, 248, 220);
-  border: 1px solid rgb(160, 160, 160);
-  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
-  padding: 2px 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 4px 0;
 }
 
 /* Toolbar button icons: original 16×16 bitmaps from the VB.NET ToolStrip */
@@ -141,98 +169,123 @@ body {
   object-fit: contain;
 }
 
-/* Toolbar: vertical gradient White → RGB(200,200,200) */
+/* Toolbar */
 .top-bar {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 3px 6px;
-  background: linear-gradient(to bottom, white, rgb(200, 200, 200));
-  border-bottom: 1px solid rgb(180, 180, 180);
+  gap: 5px;
+  padding: 5px 8px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
 }
 
-/* Toggle button gradient (CBlendItems) */
+/* Buttons: flat, subtle border; active = solid accent */
 .toggle-btn {
   font: inherit;
-  padding: 3px 10px;
-  border: 1px solid rgb(140, 140, 140);
-  border-radius: 3px;
-  cursor: default;
-  background: linear-gradient(
-    to bottom,
-    rgb(255, 255, 192),
-    rgb(220, 220, 192) 55%,
-    rgb(150, 140, 140)
-  );
-  color: rgb(40, 40, 40);
+  padding: 4px 11px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  cursor: pointer;
+  background: var(--surface-2);
+  color: var(--text);
   white-space: nowrap;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
 }
 
-.toggle-btn-active {
-  background: linear-gradient(
-    to bottom,
-    rgb(255, 100, 0),
-    rgb(255, 231, 32) 55%,
-    rgb(255, 250, 120)
-  );
+.toggle-btn:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.toggle-btn-active,
+.toggle-btn-active:hover {
+  background: var(--accent);
+  border-color: var(--accent-hover);
+  color: #ffffff;
+}
+
+.toggle-btn-active .toolbar-icon {
+  filter: brightness(1.3);
 }
 
 .toggle-btn:active {
-  filter: brightness(0.95);
+  filter: brightness(0.94);
 }
 
-/* GroupBox panel: background RGB(255,245,210) */
+.toggle-btn:focus-visible,
+.text-box:focus-visible,
+.numeric-box:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* Panel card */
 .group-box {
-  background: rgb(255, 245, 210);
-  border: 1px solid rgb(190, 180, 150);
-  border-radius: 4px;
-  padding: 14px 8px 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px 10px 8px;
   position: relative;
   margin: 4px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
 }
 
 .group-box > .group-box-title {
   position: absolute;
-  top: -1px;
-  left: 8px;
-  transform: translateY(-45%);
-  background: rgb(255, 245, 210);
-  padding: 0 4px;
-  font-size: 12px;
+  top: 6px;
+  left: 10px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
 }
 
 /* Numeric box: FloralWhite background, dashed border */
 .numeric-box {
   font: inherit;
-  background: rgb(255, 250, 240);
-  border: 1px dashed rgb(150, 150, 150);
-  padding: 1px 3px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 2px 4px;
   text-align: center;
+  color: var(--text);
 }
 
 .numeric-box-highlight {
-  background: rgb(255, 200, 110);
+  background: var(--warn-soft);
 }
 
 .label-highlight {
-  background: rgb(255, 200, 110);
+  background: var(--warn-soft);
 }
 
 /* Text boxes / dropdowns */
 .text-box,
 select {
   font: inherit;
-  background: rgb(255, 250, 240);
-  border: 1px solid rgb(150, 150, 150);
-  padding: 1px 3px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 2px 5px;
+  color: var(--text);
 }
 
 select {
-  background: rgb(255, 248, 220);
+  background: var(--surface-2);
 }
 
 input[readonly].text-box {
-  color: rgb(90, 90, 90);
+  color: var(--text-muted);
+}
+
+a {
+  color: var(--accent);
+}
+
+fieldset {
+  border-radius: var(--radius);
 }
 
 /* Main layout */
@@ -275,13 +328,16 @@ input[readonly].text-box {
   inset: 0;
   width: 100%;
   height: 100%;
-  background: rgb(240, 248, 255); /* AliceBlue */
-  border: 1px solid rgb(180, 180, 180);
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
 }
 
 /* Sensor samples preview: DimGray background */
 .sensor-preview {
-  background: rgb(105, 105, 105);
+  background: #111827;
+  border-radius: 4px;
+  overflow: hidden;
   position: relative;
   width: 100%;
   height: 110px;
@@ -299,21 +355,22 @@ input[readonly].text-box {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 3px 8px;
-  background: linear-gradient(to bottom, rgb(240, 240, 240), rgb(215, 215, 215));
-  border-top: 1px solid rgb(180, 180, 180);
+  padding: 4px 8px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
   white-space: nowrap;
 }
 
 .status-measure {
-  font-weight: bold;
-  font-family: Arial, sans-serif;
+  font-weight: 600;
+  font-family: var(--mono);
   font-size: 12px;
   margin-left: 12px;
 }
 
 .status-trim {
-  background: rgb(255, 200, 110);
+  background: var(--warn-soft);
+  border-radius: 4px;
   padding: 1px 6px;
 }
 
@@ -322,17 +379,21 @@ input[readonly].text-box {
   position: fixed;
   width: 300px;
   height: 490px;
-  background: rgb(255, 245, 210);
-  border: 1px solid rgb(120, 120, 120);
-  box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.3);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
   z-index: 2000;
   display: flex;
   flex-direction: column;
 }
 
 .info-window-title {
-  background: linear-gradient(to bottom, rgb(230, 230, 230), rgb(200, 200, 200));
-  padding: 3px 8px;
+  background: var(--menu-bar);
+  color: var(--menu-text);
+  font-weight: 600;
+  padding: 5px 10px;
   cursor: move;
   display: flex;
   justify-content: space-between;
@@ -342,7 +403,7 @@ input[readonly].text-box {
   flex: 1;
   overflow: auto;
   padding: 8px;
-  font-family: 'Courier New', monospace;
+  font-family: var(--mono);
   font-size: 12px;
   white-space: pre;
 }
@@ -350,9 +411,11 @@ input[readonly].text-box {
 /* Video controls floating panel */
 .video-controls-window {
   position: fixed;
-  background: rgb(255, 245, 210);
-  border: 1px solid rgb(120, 120, 120);
-  box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.3);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
   z-index: 2000;
   min-width: 380px;
 }
@@ -360,15 +423,28 @@ input[readonly].text-box {
 /* Compare spectra floating panel (web-only) */
 .compare-window {
   position: fixed;
-  background: rgb(255, 245, 210);
-  border: 1px solid rgb(120, 120, 120);
-  box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.3);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
   z-index: 2000;
 }
 
 .compare-window td,
 .compare-window th {
-  padding: 1px 4px;
+  padding: 2px 5px;
+}
+
+.compare-window th {
+  color: var(--text-muted);
+  font-weight: 600;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.compare-window tbody tr:nth-child(even) td {
+  background: var(--surface-2);
 }
 
 .field-row {

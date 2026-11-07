@@ -96,7 +96,7 @@ export function VideoControlsWindow({ onClose }: { onClose: () => void }) {
     >
       <div style={{ padding: 8 }}>
         {rows.length === 0 && (
-          <div style={{ padding: 12, color: 'rgb(120,120,120)' }}>
+          <div style={{ padding: 12, color: 'var(--text-muted)' }}>
             {track ? 'No adjustable controls exposed by this camera' : 'Camera not connected'}
           </div>
         )}

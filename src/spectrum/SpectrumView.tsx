@@ -147,7 +147,7 @@ export const SpectrumView = forwardRef<HTMLCanvasElement | null, Props>(function
     reprocessFileData()
 
     // Canvas background AliceBlue
-    ctx.fillStyle = 'rgb(240,248,255)'
+    ctx.fillStyle = '#ffffff'
     ctx.fillRect(0, 0, W, H)
 
     const win = extractVisible(pipeline, s.StartX, s.EndX)
@@ -205,7 +205,7 @@ export const SpectrumView = forwardRef<HTMLCanvasElement | null, Props>(function
     }
 
     // Dark green polyline RGB(0,70,0)
-    ctx.strokeStyle = 'rgb(0,70,0)'
+    ctx.strokeStyle = '#0f2a5c'
     ctx.lineWidth = 1
     ctx.beginPath()
     for (let i = 0; i < win.length; i++) {
@@ -218,7 +218,7 @@ export const SpectrumView = forwardRef<HTMLCanvasElement | null, Props>(function
 
     // If adjacent data points are >2px apart: draw a small 3x3 box at each point
     if (destW / win.length > 2) {
-      ctx.fillStyle = 'rgb(0,70,0)'
+      ctx.fillStyle = '#0f2a5c'
       for (let i = 0; i < win.length; i++) {
         ctx.fillRect(idxToX(i) - 1.5, vToY(win.values[i]) - 1.5, 3, 3)
       }
@@ -322,7 +322,7 @@ export const SpectrumView = forwardRef<HTMLCanvasElement | null, Props>(function
       const nmPerSample = (nmMax - nmMin) / n
       const minProminence = 0.05 * win.maxPeakValue // ignore noise bumps
       const peaks = detectPeaks(win.values, maxV, W, true, false)
-      ctx.font = '11px Arial'
+      ctx.font = '11px Inter, "Segoe UI", system-ui, Arial, sans-serif'
       ctx.textBaseline = 'middle'
       ctx.lineWidth = 1
       for (const p of peaks) {
@@ -483,7 +483,7 @@ export const SpectrumView = forwardRef<HTMLCanvasElement | null, Props>(function
         ctx.strokeRect(bx + 0.5, by + 0.5, tw + 11, 19)
         ctx.fillStyle = 'rgb(180,0,0)'
         ctx.fillText(text, bx + 6, by + 10)
-        ctx.font = '11px Arial'
+        ctx.font = '11px Inter, "Segoe UI", system-ui, Arial, sans-serif'
         ctx.fillStyle = 'rgb(120,40,40)'
         ctx.fillText(tRef.current('Sat_Hint'), bx + 2, by + 32)
         ctx.restore()
@@ -771,12 +771,12 @@ function drawPeakLabel(ctx: CanvasRenderingContext2D, x: number, y: number, text
     if (text.length > 4) w = 37
     if (text.length > 5) w = 44
   }
-  ctx.fillStyle = 'yellow'
+  ctx.fillStyle = 'rgba(255,255,255,0.92)'
   ctx.fillRect(x - 14, y, w, 14)
-  ctx.strokeStyle = 'green'
+  ctx.strokeStyle = '#0f2a5c'
   ctx.lineWidth = 1
   ctx.strokeRect(x - 14 + 0.5, y + 0.5, w - 1, 13)
-  ctx.fillStyle = 'black'
+  ctx.fillStyle = '#0f2a5c'
   ctx.textBaseline = 'middle'
   ctx.textAlign = 'left'
   ctx.fillText(text, x - 13, y + 8)
@@ -793,12 +793,12 @@ function drawLabel(
   text: string,
   border: string,
 ) {
-  ctx.fillStyle = 'yellow'
+  ctx.fillStyle = 'rgba(255,255,255,0.92)'
   ctx.fillRect(x, y, w, h)
   ctx.strokeStyle = border
   ctx.lineWidth = 1
   ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1)
-  ctx.fillStyle = 'black'
+  ctx.fillStyle = '#0f2a5c'
   ctx.textBaseline = 'middle'
   ctx.textAlign = 'center'
   ctx.fillText(text, x + w / 2, y + h / 2 + 1)
@@ -818,8 +818,8 @@ function drawGrid(
   destH: number,
   logK: number,
 ) {
-  const pens = ['rgb(0,0,0)', 'rgb(100,100,100)', 'rgb(160,160,160)', 'rgb(200,200,200)', 'rgb(230,230,230)']
-  ctx.font = '11px Arial'
+  const pens = ['#64748b', '#a3afbf', '#d3dae3', '#e6eaf0', '#f2f4f7'] // modern theme: soft scientific grid
+  ctx.font = '11px Inter, "Segoe UI", system-ui, Arial, sans-serif'
   ctx.textBaseline = 'alphabetic'
 
   // Horizontal axis: nm grid
@@ -845,7 +845,7 @@ function drawGrid(
       ctx.lineTo(x, H)
       ctx.stroke()
       if (nmCoeff > st.labelIf || st.mod === 100) {
-        ctx.fillStyle = 'black'
+        ctx.fillStyle = '#334155'
         ctx.textAlign = 'center'
         const label = st.mod < 1 ? nm.toFixed(1) : String(Math.round(nm))
         ctx.fillText(label, x, 11)

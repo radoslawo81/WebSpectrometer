@@ -200,7 +200,7 @@ function TcdSamplesPanel() {
 
       // Data flashing: alternate background color every frame (FlashComArea)
       flashRef.current = !flashRef.current
-      ctx.fillStyle = flashRef.current ? 'rgb(255,220,180)' : 'rgb(255,240,200)'
+      ctx.fillStyle = flashRef.current ? '#cbd5e1' : '#e2e8f0'
       ctx.fillRect(0, 0, SCALE_BORDER, H)
       ctx.fillStyle = 'whitesmoke'
       ctx.fillRect(SCALE_BORDER, 0, plotW, H)

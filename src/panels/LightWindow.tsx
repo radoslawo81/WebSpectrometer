@@ -130,7 +130,7 @@ export function LightWindow({ onClose }: { onClose: () => void }) {
             {showAll && (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2, marginTop: 4, fontSize: 11 }}>
                 {m.cri.Ri.map((r, i) => (
-                  <div key={i} style={{ textAlign: 'center', background: 'rgba(255,255,255,0.6)', border: '1px solid rgb(210,210,210)' }}>
+                  <div key={i} style={{ textAlign: 'center', background: 'var(--surface-2)', border: '1px solid rgb(210,210,210)' }}>
                     R{i + 1}
                     <br />
                     <b>{r.toFixed(0)}</b>
@@ -157,7 +157,7 @@ export function LightWindow({ onClose }: { onClose: () => void }) {
         </div>
 
         {/* Response calibration */}
-        <fieldset style={{ border: '1px solid rgb(200,190,160)', padding: '4px 6px' }}>
+        <fieldset style={{ border: '1px solid var(--border)', padding: '4px 6px' }}>
           <legend style={{ fontSize: 11 }}>{t('Lq_ResponseTitle')}</legend>
           <div className="field-row" style={{ flexWrap: 'wrap' }}>
             <span>{t('Lq_LampT')}</span>
@@ -170,7 +170,7 @@ export function LightWindow({ onClose }: { onClose: () => void }) {
             <ToggleButton onClick={() => response && downloadText('response_calibration.txt', responseToText(response))}>{t('Lq_Save')}</ToggleButton>
             <ToggleButton onClick={() => void loadResp()}>{t('Lq_Load')}</ToggleButton>
           </div>
-          <div style={{ fontSize: 11, color: 'rgb(90,90,90)' }}>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
             {response ? (
               <>
                 {t('Lq_ResponseStatus')
@@ -188,7 +188,7 @@ export function LightWindow({ onClose }: { onClose: () => void }) {
         </fieldset>
 
         {/* Lux calibration */}
-        <fieldset style={{ border: '1px solid rgb(200,190,160)', padding: '4px 6px' }}>
+        <fieldset style={{ border: '1px solid var(--border)', padding: '4px 6px' }}>
           <legend style={{ fontSize: 11 }}>{t('Lq_LuxTitle')}</legend>
           <div className="field-row" style={{ flexWrap: 'wrap' }}>
             <span>{t('Lq_LuxMeter')}</span>
@@ -208,10 +208,10 @@ export function LightWindow({ onClose }: { onClose: () => void }) {
             <span title={t('Lq_LxWTip')}>{t('Lq_Power')}</span>
             <NumInput value={lux.watts} onChange={(v) => setLux({ watts: v })} width={50} placeholder="W" />
           </div>
-          <div style={{ fontSize: 11, color: 'rgb(90,90,90)' }}>{t('Lq_LuxHint')}</div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{t('Lq_LuxHint')}</div>
         </fieldset>
 
-        {msg && <div style={{ fontSize: 11, color: 'rgb(0,90,160)' }}>{msg}</div>}
+        {msg && <div style={{ fontSize: 11, color: 'var(--accent)' }}>{msg}</div>}
       </div>
     </FloatingWindow>
   )

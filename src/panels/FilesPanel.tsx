@@ -21,7 +21,7 @@ export function FilesPanel() {
           <option value="PNG">PNG</option>
         </select>
       </div>
-      <div className="field-row" style={{ color: 'rgb(120,120,120)' }}>
+      <div className="field-row" style={{ color: 'var(--text-muted)' }}>
         {/* The original program has a path box here; the Web version shows a drag-and-drop hint */}
         <span>{t('Msg_DropHint')}</span>
       </div>

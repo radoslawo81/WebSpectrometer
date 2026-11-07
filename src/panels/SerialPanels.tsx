@@ -22,7 +22,7 @@ export function SerialPortPanel() {
         <div style={{ flex: 1 }} />
         <ConnectButton connect={connectTcd} />
       </div>
-      <div className="field-row" style={{ color: 'rgb(120,120,120)' }}>
+      <div className="field-row" style={{ color: 'var(--text-muted)' }}>
         <span>Web Serial: port chooser opens on connect</span>
       </div>
     </div>

@@ -1,0 +1,37 @@
+# Build an offline package and publish a GitHub release when a version tag (v*) is pushed
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: 'true'
+      - run: npm run build
+        env:
+          BASE_PATH: ./
+      - name: Package
+        run: |
+          cd dist
+          zip -qr "../WebSpectrometer-${GITHUB_REF_NAME}.zip" .
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          notes=".github/release-notes/${GITHUB_REF_NAME}.md"
+          [ -f "$notes" ] || notes=/dev/null
+          gh release create "$GITHUB_REF_NAME" "WebSpectrometer-${GITHUB_REF_NAME}.zip" \
+            --title "WebSpectrometer ${GITHUB_REF_NAME}" --notes-file "$notes"

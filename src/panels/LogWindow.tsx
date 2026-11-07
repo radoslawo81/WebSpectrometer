@@ -106,7 +106,7 @@ export function LogWindow({ onClose }: { onClose: () => void }) {
           {last && first && <span>{elapsed((last.t - first.t) / 1000)}</span>}
         </div>
         {(q === 'cct' || q === 'lux') && <div style={{ fontSize: 10, color: 'rgb(140,80,0)' }}>{t('Lg_LightNote')}</div>}
-        <div style={{ fontSize: 10, color: 'rgb(120,120,120)' }}>{t('Lg_Hint')}</div>
+        <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{t('Lg_Hint')}</div>
       </div>
     </FloatingWindow>
   )

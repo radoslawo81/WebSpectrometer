@@ -2,6 +2,11 @@
 
 **English** | [简体中文](docs/README.zh-CN.md) | [繁體中文](docs/README.zh-TW.md) | [Italiano](docs/README.it.md) | [Français](docs/README.fr.md) | [Português](docs/README.pt.md)
 
+> ### This fork: radoslawo81/WebSpectrometer
+> **▶ [radoslawo81.github.io/WebSpectrometer](https://radoslawo81.github.io/WebSpectrometer/)** · [Releases](https://github.com/radoslawo81/WebSpectrometer/releases)
+>
+> Adds: FWHM · spectrum comparison (UV/B/G/R/IR %) · light quality (CCT, Duv, CRI, LER, lux) with halogen response calibration · transmission of glasses/filters (τv, UV/IR blocking) · absorbance with Beer–Lambert · automatic wavelength calibration from reference lamps · spectral line identification and 2nd-order helper · saturation warning · time log · HDR · HTML/PDF report · Polish UI · modern scientific theme.
+
 A DIY spectrometer application — a fork of [Theremino Spectrometer](https://www.theremino.com/en/downloads/automation#spectrometer) V5.0 that runs in your browser.
 
 **▶ Try it now: [spectrometer-web.vercel.app](https://spectrometer-web.vercel.app/)** — no installation, just open it in a Chromium-based browser (Chrome, Edge, Opera…).

@@ -30,14 +30,14 @@ function Tile({ label, value, unit, title, big }: { label: string; value: string
     <div
       title={title}
       style={{
-        background: 'rgba(255,255,255,0.65)',
-        border: '1px solid rgb(210,200,170)',
+        background: 'var(--surface-2)',
+        border: '1px solid var(--border)',
         borderRadius: 3,
         padding: '3px 6px',
         minWidth: 0,
       }}
     >
-      <div style={{ fontSize: 10, color: 'rgb(100,100,100)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</div>
+      <div style={{ fontSize: 10, color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</div>
       <div style={{ fontSize: big ? 20 : 15, fontWeight: 'bold', whiteSpace: 'nowrap' }}>
         {value}
         {unit && value !== '—' && <span style={{ fontSize: 11, fontWeight: 'normal' }}> {unit}</span>}

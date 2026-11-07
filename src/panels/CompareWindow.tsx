@@ -171,7 +171,7 @@ export function CompareWindow({ onClose }: { onClose: () => void }) {
             <ToggleButton onClick={copy}>{copied ? t('Cmp_Copied') : t('Cmp_Copy')}</ToggleButton>
           )}
         </div>
-        <div style={{ fontSize: 10, color: 'rgb(120,120,120)' }}>{t('Cmp_Hint')}</div>
+        <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{t('Cmp_Hint')}</div>
       </div>
     </FloatingWindow>
   )

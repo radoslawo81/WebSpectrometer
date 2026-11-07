@@ -49,7 +49,7 @@ export function HdrWindow({ onClose }: { onClose: () => void }) {
   return (
     <FloatingWindow title={t('Hd_Title')} x={pos.x} y={pos.y} width={420} onMove={onMove} onClose={onClose} className="compare-window">
       <div style={{ padding: 8, display: 'flex', flexDirection: 'column', gap: 6, fontSize: 12 }}>
-        <div style={{ fontSize: 11, color: 'rgb(90,90,90)' }}>{t('Hd_Intro')}</div>
+        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{t('Hd_Intro')}</div>
         <div className="field-row" style={{ gap: 6 }}>
           <ToggleButton active={!!short} onClick={() => (setShort(shot()), setRes(null))} style={{ flex: 1 }}>
             1. {t('Hd_Short')}
@@ -83,7 +83,7 @@ export function HdrWindow({ onClose }: { onClose: () => void }) {
             </div>
           </>
         )}
-        <div style={{ fontSize: 10, color: 'rgb(120,120,120)' }}>{t('Hd_Hint')}</div>
+        <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{t('Hd_Hint')}</div>
       </div>
     </FloatingWindow>
   )

@@ -50,7 +50,7 @@ export function MiniChart({ series, width, height, xFormat = (x) => x.toFixed(0)
   const xt = niceTicks(x0, x1, 5)
   const yt = niceTicks(y0, y1, 4)
   return (
-    <svg width={width} height={height} style={{ background: 'rgb(240,248,255)', border: '1px solid rgb(180,180,180)' }}>
+    <svg width={width} height={height} style={{ background: '#ffffff', border: '1px solid var(--border)', borderRadius: 4 }}>
       {xt.map((x) => (
         <g key={`x${x}`}>
           <line x1={X(x)} x2={X(x)} y1={pad.t} y2={height - pad.b} stroke="rgb(210,210,210)" />

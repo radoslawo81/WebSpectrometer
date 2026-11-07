@@ -175,7 +175,7 @@ function AboutDialog({ onClose }: { onClose: () => void }) {
         <img src={aboutLogo} alt="" draggable={false} style={{ width: 53, height: 50, objectFit: 'contain' }} />
         <h3 style={{ marginBottom: 10 }}>Spectrometer</h3>
         <p style={{ margin: '8px 0' }}>Visible, UVA and near-infrared spectrometer running in your browser</p>
-        <p style={{ margin: '8px 0', fontSize: 11, color: 'rgb(90,90,90)' }}>
+        <p style={{ margin: '8px 0', fontSize: 11, color: 'var(--text-muted)' }}>
           A fork of Theremino Spectrometer V5.0 that runs in the browser — special thanks to{' '}
           <a href="https://www.theremino.com" target="_blank" rel="noreferrer">
             theremino.com
@@ -194,7 +194,7 @@ function AboutDialog({ onClose }: { onClose: () => void }) {
           {' · GNU GPL'}
         </p>
         {__COMMIT_SHA__ && (
-          <p style={{ margin: '8px 0', fontSize: 11, color: 'rgb(90,90,90)' }}>
+          <p style={{ margin: '8px 0', fontSize: 11, color: 'var(--text-muted)' }}>
             Build:{' '}
             <a
               href={`https://github.com/jayden-sudo/WebSpectrometer/commit/${__COMMIT_SHA__}`}

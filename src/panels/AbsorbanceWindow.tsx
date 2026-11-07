@@ -195,7 +195,7 @@ export function AbsorbanceWindow({ onClose }: { onClose: () => void }) {
         </div>
         {outOfRange && <div style={{ fontSize: 11, color: 'rgb(160,90,0)' }}>{t('Ab_Range')}</div>}
 
-        <fieldset style={{ border: '1px solid rgb(200,190,160)', padding: '4px 6px' }}>
+        <fieldset style={{ border: '1px solid var(--border)', padding: '4px 6px' }}>
           <legend style={{ fontSize: 11 }}>{t('Ab_Conc')}</legend>
           <div className="field-row" style={{ gap: 10 }}>
             <label>
@@ -252,7 +252,7 @@ export function AbsorbanceWindow({ onClose }: { onClose: () => void }) {
             c = <b>{Number.isFinite(conc) ? conc.toPrecision(4) : '—'}</b> {cfg.mode === 'beer' ? 'mol/L' : cfg.unit}
           </div>
         </fieldset>
-        <div style={{ fontSize: 10, color: 'rgb(120,120,120)' }}>{t('Ab_Hint')}</div>
+        <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{t('Ab_Hint')}</div>
       </div>
     </FloatingWindow>
   )

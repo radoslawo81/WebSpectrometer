@@ -61,7 +61,7 @@ function Chart({ curves, od }: { curves: { curve: TransCurve; color: string; wid
     return d
   }
   return (
-    <svg width={CHART_W} height={CHART_H} style={{ background: 'rgb(240,248,255)', border: '1px solid rgb(180,180,180)' }}>
+    <svg width={CHART_W} height={CHART_H} style={{ background: '#ffffff', border: '1px solid var(--border)', borderRadius: 4 }}>
       {band(-1e9, 380, 'rgba(150,80,220,0.12)')}
       {band(780, 1e9, 'rgba(120,120,120,0.12)')}
       {grid.map((nm) => (
@@ -189,7 +189,7 @@ export function TransmissionWindow({ onClose }: { onClose: () => void }) {
             {t('Tr_SaveSample')}
           </ToggleButton>
         </div>
-        <div style={{ fontSize: 11, color: 'rgb(90,90,90)' }}>{t('Tr_Steps')}</div>
+        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{t('Tr_Steps')}</div>
 
         <Chart curves={curves} od={od} />
         <div className="field-row" style={{ justifyContent: 'space-between', fontSize: 11 }}>
@@ -234,7 +234,7 @@ export function TransmissionWindow({ onClose }: { onClose: () => void }) {
                     {t('Tr_Category')} {catText(results.lum.category)}
                   </td>
                 </tr>
-                <tr style={{ fontSize: 11, color: 'rgb(90,90,90)', borderBottom: '1px solid rgb(200,200,200)' }}>
+                <tr style={{ fontSize: 11, color: 'var(--text-muted)', borderBottom: '1px solid rgb(200,200,200)' }}>
                   <td>{t('Tr_Band')}</td>
                   <td style={{ textAlign: 'right' }} title={t('Tr_MeanTip')}>
                     {t('Tr_Mean')}
@@ -249,7 +249,7 @@ export function TransmissionWindow({ onClose }: { onClose: () => void }) {
                     <td>{t(`Tr_Band_${b.key}`)} {BAND_RANGE[b.key]} nm</td>
                     <td style={{ textAlign: 'right' }}>{pct(b.mean)}</td>
                     <td style={{ textAlign: 'right' }}>{b.energyBlocked != null ? `−${pct(b.energyBlocked)}` : '—'}</td>
-                    <td style={{ textAlign: 'right', color: 'rgb(120,120,120)', fontSize: 11 }}>
+                    <td style={{ textAlign: 'right', color: 'var(--text-muted)', fontSize: 11 }}>
                       {b.coverage < 0.97 ? (b.coverage > 0 ? t('Tr_Partial').replace('{p}', Math.floor(b.coverage * 100).toString()) : t('Tr_NotMeasured')) : ''}
                     </td>
                   </tr>
@@ -258,7 +258,7 @@ export function TransmissionWindow({ onClose }: { onClose: () => void }) {
             </table>
 
             {/* Colour of daylight through the lens */}
-            <fieldset style={{ border: '1px solid rgb(200,190,160)', padding: '4px 6px' }}>
+            <fieldset style={{ border: '1px solid var(--border)', padding: '4px 6px' }}>
               <legend style={{ fontSize: 11 }}>{t('Tr_ColourTitle')}</legend>
               {lens ? (
                 <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
@@ -322,10 +322,10 @@ export function TransmissionWindow({ onClose }: { onClose: () => void }) {
         )}
 
         <div className="field-row" style={{ justifyContent: 'space-between' }}>
-          <span style={{ fontSize: 11, color: 'rgb(0,90,160)' }}>{msg}</span>
+          <span style={{ fontSize: 11, color: 'var(--accent)' }}>{msg}</span>
           <ToggleButton onClick={exportCsv}>{t('Tr_Export')}</ToggleButton>
         </div>
-        <div style={{ fontSize: 10, color: 'rgb(120,120,120)' }}>{t('Tr_Hint')}</div>
+        <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{t('Tr_Hint')}</div>
       </div>
     </FloatingWindow>
   )

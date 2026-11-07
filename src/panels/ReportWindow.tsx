@@ -172,7 +172,7 @@ ${rows.join('\n')}
           <ToggleButton onClick={download}>{t('Rp_Download')}</ToggleButton>
           <ToggleButton onClick={open}>{t('Rp_Open')}</ToggleButton>
         </div>
-        <div style={{ fontSize: 10, color: 'rgb(120,120,120)' }}>{t('Rp_Hint')}</div>
+        <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{t('Rp_Hint')}</div>
       </div>
     </FloatingWindow>
   )
