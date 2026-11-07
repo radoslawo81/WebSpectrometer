@@ -9,6 +9,10 @@ import { POL_EXTRA } from './pol'
 
 export const EXTRA_KEYS: Record<LangCode, Record<string, string>> = {
   ENG: {
+    btn_Controls: 'Camera & filters',
+    Tip_Controls: 'Show or hide the Video input device and Filters panels (connect / disconnect the camera, averaging, reference, background)',
+    Lq_Details: 'Calibration & details…',
+    Lq_DetailsTip: 'Open the Light quality window: R1–R14, halogen response calibration, lux calibration',
     St_Value: 'Value',
     St_Max: 'Max',
     St_PeakArea: 'Peak area',

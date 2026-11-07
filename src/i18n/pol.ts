@@ -1,5 +1,9 @@
 // Polish translations of the web-only keys (EXTRA_KEYS.ENG). Web addition.
 export const POL_EXTRA: Record<string, string> = {
+  btn_Controls: "Kamera i filtry",
+  Tip_Controls: "Pokaż lub ukryj panele Urządzenie wideo i Filtry (połącz / rozłącz kamerę, uśrednianie, odniesienie, tło)",
+  Lq_Details: "Kalibracja i szczegóły…",
+  Lq_DetailsTip: "Otwórz okno Jakość światła: R1–R14, kalibracja czułości halogenem, kalibracja luksów",
   St_Value: "Wartość",
   St_Max: "Maks.",
   St_PeakArea: "Pole piku",

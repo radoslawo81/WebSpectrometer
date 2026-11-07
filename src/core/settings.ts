@@ -39,6 +39,7 @@ export interface Settings {
   CompareVisible: boolean // Web-only: Compare spectra window open
   CompareOverlay: boolean // Web-only: draw the saved reference spectrum on the graph
   LightVisible: boolean // Web-only: Light quality window open
+  ControlsVisible: boolean // Web-only: show Video input device + Filters panels (Light panel is always shown)
   TransVisible: boolean // Web-only: Transmission window open
   ResponseCorrected: boolean // Web-only: apply the halogen response correction to the spectrum
   AutoCalVisible: boolean // Web-only windows open
@@ -102,6 +103,7 @@ export const DEFAULT_SETTINGS: Settings = {
   CompareVisible: false,
   CompareOverlay: true,
   LightVisible: false,
+  ControlsVisible: false,
   TransVisible: false,
   ResponseCorrected: false,
   AutoCalVisible: false,

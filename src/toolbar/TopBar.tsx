@@ -156,6 +156,13 @@ export function TopBar({ spectrumCanvas }: { spectrumCanvas: () => HTMLCanvasEle
       </ToggleButton>
       <div style={{ flex: 1 }} />
       <ToggleButton
+        active={settings.ControlsVisible}
+        title={t('Tip_Controls')}
+        onClick={() => setSettings({ ControlsVisible: !settings.ControlsVisible })}
+      >
+        {t('btn_Controls')}
+      </ToggleButton>
+      <ToggleButton
         active={settings.OptionsVisible}
         onClick={() => setSettings({ OptionsVisible: !settings.OptionsVisible })}
       >

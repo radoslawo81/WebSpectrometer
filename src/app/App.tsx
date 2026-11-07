@@ -16,6 +16,7 @@ import { AbsorbanceWindow } from '../panels/AbsorbanceWindow'
 import { HdrWindow } from '../panels/HdrWindow'
 import { ReportWindow } from '../panels/ReportWindow'
 import { FiltersPanel } from '../panels/FiltersPanel'
+import { LightPanel } from '../panels/LightPanel'
 import { FilesPanel } from '../panels/FilesPanel'
 import { SensorSamplesPanel } from '../panels/SensorSamplesPanel'
 import { InfoWindow } from '../info/InfoWindow'
@@ -70,6 +71,7 @@ export function App() {
   }, [])
 
   const optionsOn = settings.OptionsVisible
+  const controlsOn = settings.ControlsVisible
 
   return (
     <div
@@ -88,31 +90,38 @@ export function App() {
       <TopBar spectrumCanvas={() => spectrumCanvasRef.current} />
       <div className="main-area">
         <div className="panels-row">
-          {/* §3.2: with Options off, keep Video Input Device (or Serial) + Filters, hide the rest */}
-          {/* §3.3: TCD mode replaces left-column panels */}
-          <div className="panels-left">
-            {settings.SensorType === 'WebCam' ? (
-              <>
-                <VideoInputPanel />
-                {optionsOn && (
-                  <VideoOptionsPanel
-                    controlsOpen={showVideoControls}
-                    onToggleControls={() => setShowVideoControls((v) => !v)}
-                  />
-                )}
-              </>
-            ) : (
-              <>
-                <SerialPortPanel />
-                {optionsOn && <SensorPanel />}
-              </>
-            )}
-            {optionsOn && <FilesPanel />}
-          </div>
+          {/* Web layout: the Light panel is always shown; Video input device + Filters only with "Camera & filters" */}
+          {/* §3.2 / §3.3: Options adds the remaining panels; TCD mode replaces left-column panels */}
+          {controlsOn && (
+            <div className="panels-left">
+              {settings.SensorType === 'WebCam' ? (
+                <>
+                  <VideoInputPanel />
+                  {optionsOn && (
+                    <VideoOptionsPanel
+                      controlsOpen={showVideoControls}
+                      onToggleControls={() => setShowVideoControls((v) => !v)}
+                    />
+                  )}
+                </>
+              ) : (
+                <>
+                  <SerialPortPanel />
+                  {optionsOn && <SensorPanel />}
+                </>
+              )}
+              {optionsOn && <FilesPanel />}
+            </div>
+          )}
           <div className="panels-right">
             <div className="panels-row" style={{ alignItems: 'stretch' }}>
-              <div style={{ width: 300, flexShrink: 0 }}>
-                <FiltersPanel />
+              {controlsOn && (
+                <div style={{ width: 300, flexShrink: 0 }}>
+                  <FiltersPanel />
+                </div>
+              )}
+              <div style={{ flex: controlsOn && optionsOn ? '0 1 480px' : '1 1 480px', display: 'flex', minWidth: 300 }}>
+                <LightPanel />
               </div>
               {optionsOn && (
                 <div style={{ flex: 1, display: 'flex', minWidth: 0 }}>
