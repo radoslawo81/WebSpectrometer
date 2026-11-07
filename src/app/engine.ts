@@ -22,8 +22,19 @@ import {
   type PipelineState,
 } from '../core/pipeline'
 import { rescaleCalibration } from '../core/calibration'
+import type { ResponseCalibration } from '../core/responseCal'
 import { AVERAGE_OPTIONS } from '../core/settings'
 import { getState, hasCalibrated, markCalibrated, setCalibration, setRuntime, setSettings } from './store'
+
+// Web-only: spectral response correction (set by lightStore), applied when settings.ResponseCorrected
+let responseCorrection: ResponseCalibration | null = null
+export function setResponseCorrection(cal: ResponseCalibration | null): void {
+  responseCorrection = cal
+  if (getState().runtime.fileMode !== null) runFileDisplayStages()
+}
+export function activeResponse(): ResponseCalibration | null {
+  return getState().settings.ResponseCorrected ? responseCorrection : null
+}
 
 export const camera = new CameraCapture()
 export const tcd = new TcdSerial()
@@ -101,6 +112,7 @@ camera.onFrame = (frame) => {
     backgroundEnabled: pipeline.background !== null,
     startX: settings.StartX,
     endX: settings.EndX,
+    response: activeResponse(),
   }
 
   processFrame(pipeline, frame.samples, params, getState().calibration, irradiance)
@@ -250,6 +262,7 @@ tcd.onFrame = (frame) => {
       adcMinScaled: adcMin * scaleCoeff,
       startX: s.StartX,
       endX: s.EndX,
+      response: activeResponse(),
     },
     st.calibration,
     irradiance,
@@ -329,6 +342,7 @@ function runFileDisplayStages(): void {
     referenceEnabled: pipeline.reference !== null,
     startX: s.StartX,
     endX: s.EndX,
+    response: activeResponse(),
   })
 }
 

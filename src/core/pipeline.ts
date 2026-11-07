@@ -1,6 +1,7 @@
 // Core data flow, ported from Module_Spectrometer.vb (§11)
 // Step-by-step mapping of ProcessCapturedImage → Spectrometer_ProcessReceivedSamples
 
+import { responseAt, type ResponseCalibration } from './responseCal'
 import { type Calibration, nmRange, nmToBin, interpolate } from './calibration'
 
 export interface IrradianceCoeffs {
@@ -23,6 +24,8 @@ export interface PipelineParams {
   // Visible window (per-mille): Reference's MaxRef takes the maximum within this window (AddReference)
   startX?: number
   endX?: number
+  // Web-only: spectral response correction applied after Background (null = off)
+  response?: ResponseCalibration | null
 }
 
 export interface PipelineState {
@@ -42,6 +45,10 @@ export interface PipelineState {
   background: Float64Array | null
   nmMin: number
   nmMax: number
+  // Web-only: display spectrum before the response correction (Light/Transmission/halogen calibration use it)
+  uncorrected: Float64Array
+  respLut: Float64Array | null
+  respLutKey: string
   // Hot-path caches (reused every frame to avoid GC jitter)
   work: Float64Array
   visibleScratch: Float64Array
@@ -61,6 +68,9 @@ export function createPipelineState(numSamples: number): PipelineState {
     iir: new Float64Array(numSamples),
     resampled: new Float64Array(numSamples),
     spatialFiltered: new Float64Array(numSamples),
+    uncorrected: new Float64Array(numSamples),
+    respLut: null,
+    respLutKey: '',
     reference: null,
     background: null,
     nmMin: 0,
@@ -180,7 +190,7 @@ export function processFrame(
 // exported separately: the engine re-runs them in file mode when Spatial avg./Reference/Background change
 export function runDisplayStages(
   state: PipelineState,
-  params: Pick<PipelineParams, 'spatialAveraging' | 'backgroundEnabled' | 'referenceEnabled' | 'startX' | 'endX'>,
+  params: Pick<PipelineParams, 'spatialAveraging' | 'backgroundEnabled' | 'referenceEnabled' | 'startX' | 'endX' | 'response'>,
 ): void {
   const n = state.numSamples
   const resampled = state.resampled
@@ -210,6 +220,15 @@ export function runDisplayStages(
     for (let i = 0; i < n; i++) out[i] = Math.max(0, out[i] - bg[i])
   }
 
+  // ⑩b Web-only: spectral response correction (halogen calibration). Wavelengths outside the
+  // calibration's valid range, or where the correction would exceed RESPONSE_CAP, are set to 0.
+  if (state.uncorrected.length !== n) state.uncorrected = new Float64Array(n)
+  state.uncorrected.set(out)
+  if (params.response) {
+    const lut = responseLut(state, params.response)
+    for (let i = 0; i < n; i++) out[i] *= lut[i]
+  }
+
   // ⑪ Reference: MaxRef = maximum within the visible window (floor 0.1), full-length v × MaxRef/ref written back (AddReference)
   // After write-back, spatialFiltered is the data source for saving, consistent with the original program (§8.8)
   if (params.referenceEnabled && state.reference) {
@@ -226,6 +245,23 @@ export function runDisplayStages(
       out[i] = v
     }
   }
+}
+
+// Largest correction factor accepted (relative to 1 at 560 nm): beyond it noise would be amplified
+export const RESPONSE_CAP = 30
+
+function responseLut(state: PipelineState, cal: ResponseCalibration): Float64Array {
+  const n = state.numSamples
+  const key = `${cal.time}|${cal.validLo}|${cal.validHi}|${state.nmMin}|${state.nmMax}|${n}`
+  if (state.respLut && state.respLut.length === n && state.respLutKey === key) return state.respLut
+  const lut = new Float64Array(n)
+  for (let i = 0; i < n; i++) {
+    const c = responseAt(cal, state.nmMin + ((state.nmMax - state.nmMin) * i) / n)
+    lut[i] = Number.isFinite(c) && c > 0 && c <= RESPONSE_CAP ? c : 0
+  }
+  state.respLut = lut
+  state.respLutKey = key
+  return lut
 }
 
 // Visible window bounds (ProcessCapturedImage AREA X): VB `\` truncates toward zero — NOT floor —

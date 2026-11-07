@@ -74,7 +74,8 @@ export function useTrans(): TransState {
 }
 
 function snap(): Snapshot {
-  return { nmMin: pipeline.nmMin, nmMax: pipeline.nmMax, values: Array.from(pipeline.spatialFiltered) }
+  // Uncorrected spectrum: T is a ratio (response cancels) and energy weights apply the correction themselves
+  return { nmMin: pipeline.nmMin, nmMax: pipeline.nmMax, values: Array.from(pipeline.uncorrected) }
 }
 
 export function saveDark(): void {

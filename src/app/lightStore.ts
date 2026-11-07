@@ -3,7 +3,7 @@
 import { useSyncExternalStore } from 'react'
 import { applyResponse, calibrateResponse, type ResponseCalibration } from '../core/responseCal'
 import { lightMetrics, toCieGrid, type LightMetrics } from '../core/colorimetry'
-import { pipeline } from './engine'
+import { pipeline, setResponseCorrection } from './engine'
 import { getState } from './store'
 
 const RESP_KEY = 'webspectrometer.responseCalibration'
@@ -73,10 +73,15 @@ export function getLightResponse(): ResponseCalibration | null {
 export function setResponse(r: ResponseCalibration | null): void {
   save(RESP_KEY, r)
   set({ response: r })
+  setResponseCorrection(r)
 }
 
+// Hand the stored calibration to the engine at start-up
+setResponseCorrection(state.response)
+
 export function calibrateResponseFromCurrent(lampT: number): string | null {
-  const r = calibrateResponse(pipeline.spatialFiltered, pipeline.nmMin, pipeline.nmMax, lampT)
+  // Always from the spectrum before any response correction
+  const r = calibrateResponse(pipeline.uncorrected, pipeline.nmMin, pipeline.nmMax, lampT)
   if (typeof r === 'string') return r
   setResponse(r)
   return null
@@ -114,7 +119,8 @@ export function calibrationLooksWrong(): boolean {
 
 // Metrics of the spectrum shown now (response-corrected when a response calibration exists)
 export function currentLight(): CurrentLight {
-  const { spatialFiltered: v, nmMin, nmMax } = pipeline
+  // Uncorrected spectrum: the correction is applied below (independent of the Corrected toggle)
+  const { uncorrected: v, nmMin, nmMax } = pipeline
   const calibrated = nmMax > nmMin
   let peak = 0
   for (let i = 0; i < v.length; i++) if (v[i] > peak) peak = v[i]

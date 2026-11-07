@@ -1,7 +1,7 @@
 // File I/O (§13), ported from Module_SaveLoad.vb / Module_IrradianceCoeffs.vb
 
 import { getState, markCalibrated, setCalibration, setRuntime } from '../app/store'
-import { loadDataIntoPipeline, pipeline, setIrradiance } from '../app/engine'
+import { activeResponse, loadDataIntoPipeline, pipeline, setIrradiance } from '../app/engine'
 import { sensorMetaPairs } from '../app/sensorMeta'
 import { parseCalibration, serializeCalibration } from './calibration'
 import { type IrradianceCoeffs } from './pipeline'
@@ -58,6 +58,12 @@ export function getSpectrumText(): string {
   lines.push('-----------------------')
   // Single source for header fields (shared with the Info window, see app/sensorMeta.ts)
   for (const [k, v] of sensorMetaPairs()) lines.push(`${k}${sep}${v}`)
+  // Web-only: record the spectral response correction (unknown keys are ignored when loading)
+  const resp = activeResponse()
+  if (resp) {
+    const T = Number.isFinite(resp.lampT) ? `${resp.lampT} K, ` : ''
+    lines.push(`ResponseCorrection${sep}halogen ${T}valid ${resp.validLo}-${resp.validHi} nm`)
+  }
   lines.push('-----------------------')
   lines.push(`Nanometers${sep}Intensity`)
   lines.push('-----------------------')

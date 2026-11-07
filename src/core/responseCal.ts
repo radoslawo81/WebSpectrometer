@@ -18,7 +18,7 @@ export interface ResponseCalibration {
   time: number
 }
 
-const SMOOTH_NM = 10 // boxcar width used on the halogen measurement (its spectrum is smooth)
+const SMOOTH_NM = 4 // boxcar width on the halogen measurement: suppresses noise but keeps sharp camera features (IR-cut edges)
 const MIN_SIGNAL = 0.05 // ignore wavelengths below 5 % of the maximum signal
 
 export function calibrateResponse(

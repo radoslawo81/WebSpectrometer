@@ -3,7 +3,7 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import { getState, markCalibrated, setCalibration, setRuntime, setSettings, useAppState } from '../app/store'
 import { useT } from '../i18n'
-import { pipeline, reprocessFileData, subscribeFrame } from '../app/engine'
+import { activeResponse, pipeline, reprocessFileData, subscribeFrame } from '../app/engine'
 import { extractVisible, updatePeakArea } from '../core/pipeline'
 import { valueToY, yToValue } from '../core/logScale'
 import { detectPeaks } from '../core/peaks'
@@ -294,6 +294,22 @@ export const SpectrumView = forwardRef<HTMLCanvasElement | null, Props>(function
         pen = true
       }
       ctx.stroke()
+      ctx.restore()
+    }
+
+    // Response correction (web-only): grey out wavelengths outside the calibration's valid range,
+    // where the corrected spectrum is set to 0
+    const resp = s.ResponseCorrected ? activeResponse() : null
+    if (resp) {
+      const shade = (a: number, b: number) => {
+        const xa = Math.max(DEST_LEFT, nmToX(a))
+        const xb = Math.min(W, nmToX(b))
+        if (xb > xa + 1) ctx.fillRect(xa, 15, xb - xa, H - 15)
+      }
+      ctx.save()
+      ctx.fillStyle = 'rgba(120,120,120,0.18)'
+      shade(-1e6, resp.validLo)
+      shade(resp.validHi, 1e6)
       ctx.restore()
     }
 

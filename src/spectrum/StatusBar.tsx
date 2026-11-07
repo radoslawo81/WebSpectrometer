@@ -3,6 +3,7 @@ import { setSettings, useAppState } from '../app/store'
 import { useT } from '../i18n'
 import { NumericBox } from '../components/NumericBox'
 import { ToggleButton } from '../components/ToggleButton'
+import { useLight } from '../app/lightStore'
 import type { SpectrumMeasure } from './SpectrumView'
 
 // Peak area format tiers (§9)
@@ -15,6 +16,7 @@ function formatPeakArea(v: number): string {
 
 export function StatusBar({ measure }: { measure: SpectrumMeasure | null }) {
   const { settings, runtime } = useAppState()
+  const { response } = useLight()
   const t = useT()
 
   // While a calibration point is being adjusted: this area shows the orange-background TRIM message instead (§12.2)
@@ -45,6 +47,14 @@ export function StatusBar({ measure }: { measure: SpectrumMeasure | null }) {
       </ToggleButton>
       <ToggleButton active={settings.Fwhm} title={t('Tip_Fwhm')} onClick={() => setSettings({ Fwhm: !settings.Fwhm })}>
         {t('btn_Fwhm')}
+      </ToggleButton>
+      <ToggleButton
+        active={settings.ResponseCorrected && !!response}
+        title={response ? t('Tip_Corrected') : t('Tip_CorrectedNone')}
+        onClick={() => response && setSettings({ ResponseCorrected: !settings.ResponseCorrected })}
+        style={response ? undefined : { opacity: 0.5 }}
+      >
+        {t('btn_Corrected')}
       </ToggleButton>
       <ToggleButton active={settings.Colors} onClick={() => setSettings({ Colors: !settings.Colors })}>
         {t('btn_Colors')}

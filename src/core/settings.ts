@@ -40,6 +40,7 @@ export interface Settings {
   CompareOverlay: boolean // Web-only: draw the saved reference spectrum on the graph
   LightVisible: boolean // Web-only: Light quality window open
   TransVisible: boolean // Web-only: Transmission window open
+  ResponseCorrected: boolean // Web-only: apply the halogen response correction to the spectrum
   Colors: boolean
   TrimScale: boolean
   // Files
@@ -92,6 +93,7 @@ export const DEFAULT_SETTINGS: Settings = {
   CompareOverlay: true,
   LightVisible: false,
   TransVisible: false,
+  ResponseCorrected: false,
   Colors: true,
   TrimScale: false,
   SpectrumFileSeparator: ';',
