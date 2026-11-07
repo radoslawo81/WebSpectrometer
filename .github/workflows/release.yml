@@ -1,9 +1,14 @@
-# Build an offline package and publish a GitHub release when a version tag (v*) is pushed
+# Build an offline package and attach it to a GitHub release when the release is published
 name: Release
 
 on:
-  push:
-    tags: ['v*']
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to build and attach the package to
+        required: true
 
 permissions:
   contents: write
@@ -13,6 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name || inputs.tag }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -23,15 +30,11 @@ jobs:
       - run: npm run build
         env:
           BASE_PATH: ./
-      - name: Package
-        run: |
-          cd dist
-          zip -qr "../WebSpectrometer-${GITHUB_REF_NAME}.zip" .
-      - name: Publish release
+      - name: Package and attach to the release
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
         run: |
-          notes=".github/release-notes/${GITHUB_REF_NAME}.md"
-          [ -f "$notes" ] || notes=/dev/null
-          gh release create "$GITHUB_REF_NAME" "WebSpectrometer-${GITHUB_REF_NAME}.zip" \
-            --title "WebSpectrometer ${GITHUB_REF_NAME}" --notes-file "$notes"
+          mv dist "WebSpectrometer-${TAG}"
+          zip -qr "WebSpectrometer-${TAG}.zip" "WebSpectrometer-${TAG}"
+          gh release upload "$TAG" "WebSpectrometer-${TAG}.zip" --clobber
