@@ -70,7 +70,8 @@ export function LightPanel() {
     if (!cur.corrected) warnings.push(t('Lq_WarnNoResponse'))
   }
   if (cur.saturated && runtime.connected) warnings.push(t('Lq_WarnSaturated'))
-  if (m?.duv != null && !criValid) warnings.push(t('Lq_WarnDuv'))
+  if (m?.notWhite) warnings.push(t('Lq_WarnNotWhite'))
+  else if (m?.duv != null && !criValid) warnings.push(t('Lq_WarnDuv'))
 
   return (
     <div className="group-box" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 5, minWidth: 0 }}>
@@ -94,6 +95,12 @@ export function LightPanel() {
           <Tile label="Duv" value={fmt(m?.duv, 4)} title={t('Lq_DuvTip')} />
           <Tile label="x, y" value={m ? `${fmt(m.x, 4)}, ${fmt(m.y, 4)}` : '—'} />
           <Tile label={t('Lq_LER')} value={m ? fmt(m.ler) : '—'} unit="lm/W" title={t('Lq_LERTip')} />
+          <Tile
+            label={cur.uva && !cur.uva.covered ? `UV-A ≥${cur.uva.lo} nm` : 'UV-A'}
+            value={cur.uva ? fmt(cur.uva.percent, cur.uva.percent < 10 ? 2 : 1) + (cur.corrected ? '' : ' *') : '—'}
+            unit="%"
+            title={t('Lq_UvaTip')}
+          />
         </div>
       </div>
       <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6 }}>

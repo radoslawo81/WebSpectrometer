@@ -52,6 +52,9 @@ export interface Settings {
   LinesOverlay: boolean
   LinesIdentify: boolean
   SecondOrder: boolean
+  Ghosts2: boolean // Web-only: flag peaks at 2λ of a shorter-wavelength peak as 2nd-order ghosts
+  Ghosts3: boolean // Web-only: same for the 3rd order (3λ)
+  BandsBar: boolean // Web-only: coloured UVC/UVB/UVA/visible/IR band bar under the graph
   Colors: boolean
   TrimScale: boolean
   // Files
@@ -116,6 +119,9 @@ export const DEFAULT_SETTINGS: Settings = {
   LinesOverlay: false,
   LinesIdentify: false,
   SecondOrder: false,
+  Ghosts2: true,
+  Ghosts3: true,
+  BandsBar: true,
   Colors: true,
   TrimScale: false,
   SpectrumFileSeparator: ';',

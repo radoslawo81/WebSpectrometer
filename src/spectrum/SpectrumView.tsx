@@ -11,7 +11,8 @@ import { measureFwhm } from '../core/fwhm'
 import { getCompareReference } from '../app/compareStore'
 import { linesOf } from '../core/lines'
 import { identifyPeaks, secondOrderStart } from '../core/lineIdent'
-import { parseSets, SET_COLORS } from '../panels/LinesWindow'
+import { ghostLabel, ghostOrders, GHOST_COLOR, parseSets, SET_COLORS } from '../panels/LinesWindow'
+import { SPECTRAL_BANDS } from '../core/bands'
 import { wavelengthToCss } from '../core/wavelengthColor'
 import { addPoint, clampBin, clampNm, nmToBin, removePoint } from '../core/calibration'
 
@@ -66,6 +67,7 @@ interface Props {
 
 const DEST_LEFT = 37 // vertical-axis scale text area
 const TOP_BAND = 15 // horizontal-axis scale numbers + calibration label band
+const BANDS_H = 16 // web-only: height of the UV/visible/IR band bar under the plot
 
 export const SpectrumView = forwardRef<HTMLCanvasElement | null, Props>(function SpectrumView({ onMeasure }, ref) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -153,7 +155,7 @@ export const SpectrumView = forwardRef<HTMLCanvasElement | null, Props>(function
     const win = extractVisible(pipeline, s.StartX, s.EndX)
 
     const destW = W - 1 - DEST_LEFT // DestWidth = DestW − 1 − DestLeft
-    const destH = H
+    const destH = s.BandsBar ? H - BANDS_H : H // web-only: the band bar takes the bottom strip
     const n = pipeline.numSamples
     const nmMin = pipeline.nmMin
     const nmMax = pipeline.nmMax
@@ -411,12 +413,43 @@ export const SpectrumView = forwardRef<HTMLCanvasElement | null, Props>(function
         }
         ctx.setLineDash([])
       }
-      if (s.LinesIdentify) {
-        const ids = identifyPeaks(pipeline.spatialFiltered, nmMin, nmMax, sets, s.SecondOrder, 25)
+      ctx.restore()
+    }
+
+    // Peak identification and higher-order ghosts (web-only). Ghost labels are drawn whenever the
+    // 2nd/3rd-order checks are on, line labels only with "Label identified peaks".
+    const gOrders = ghostOrders(s)
+    if (s.LinesIdentify || gOrders.length) {
+      const sets = parseSets(s.LinesSets)
+      const lo = nmAt(win.start)
+      const hi = nmAt(win.start + win.length - 1)
+      ctx.save()
+      ctx.textAlign = 'center'
+      {
+        const ids = identifyPeaks(pipeline.spatialFiltered, nmMin, nmMax, sets, s.SecondOrder, 25, gOrders)
         ctx.font = 'bold 10px Arial'
         ctx.textBaseline = 'bottom'
         for (const p of ids) {
-          if (!p.match || p.nm < lo || p.nm > hi) continue
+          if (p.nm < lo || p.nm > hi) continue
+          if (p.ghost) {
+            const x = nmToX(p.nm)
+            const y = vToY(p.value) - 4
+            const txt = ghostLabel(p, tRef.current, true)
+            const tw = ctx.measureText(txt).width
+            ctx.strokeStyle = GHOST_COLOR
+            ctx.setLineDash([3, 3])
+            ctx.beginPath()
+            ctx.moveTo(Math.round(x) + 0.5, y - 12)
+            ctx.lineTo(Math.round(x) + 0.5, destH)
+            ctx.stroke()
+            ctx.setLineDash([])
+            ctx.fillStyle = 'rgba(255,245,230,0.9)'
+            ctx.fillRect(x - tw / 2 - 2, y - 12, tw + 4, 12)
+            ctx.fillStyle = GHOST_COLOR
+            ctx.fillText(txt, x, y)
+            continue
+          }
+          if (!s.LinesIdentify || !p.match) continue
           const x = nmToX(p.nm)
           const y = p.dip ? vToY(p.value) + 16 : vToY(p.value) - 4
           const txt = `${p.match.order === 2 ? '2×' : ''}${p.match.line.label} ${p.match.line.nm.toFixed(1)}`
@@ -488,6 +521,38 @@ export const SpectrumView = forwardRef<HTMLCanvasElement | null, Props>(function
         ctx.fillText(tRef.current('Sat_Hint'), bx + 2, by + 32)
         ctx.restore()
       }
+    }
+
+    // Band bar (web-only): UVC / UVB / UVA / visible colours / IR under the plot
+    if (s.BandsBar) {
+      const y0 = destH
+      ctx.save()
+      ctx.fillStyle = '#ffffff'
+      ctx.fillRect(DEST_LEFT, y0, W - DEST_LEFT, H - y0)
+      ctx.font = 'bold 10px Inter, "Segoe UI", system-ui, Arial, sans-serif'
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      for (const b of SPECTRAL_BANDS) {
+        const xa = Math.max(DEST_LEFT, nmToX(b.lo))
+        const xb = Math.min(W, nmToX(b.hi))
+        if (xb <= xa) continue
+        ctx.fillStyle = b.color
+        ctx.fillRect(xa, y0 + 1, xb - xa, H - y0 - 1)
+        ctx.strokeStyle = '#ffffff'
+        ctx.beginPath()
+        ctx.moveTo(Math.round(xa) + 0.5, y0 + 1)
+        ctx.lineTo(Math.round(xa) + 0.5, H)
+        ctx.stroke()
+        const full = tRef.current(b.key)
+        const short = tRef.current(`${b.key}_S`)
+        const w = xb - xa - 4
+        const txt = ctx.measureText(full).width <= w ? full : ctx.measureText(short).width <= w ? short : ''
+        if (txt) {
+          ctx.fillStyle = b.text
+          ctx.fillText(txt, (xa + xb) / 2, y0 + (H - y0) / 2 + 1)
+        }
+      }
+      ctx.restore()
     }
 
     // Calibration labels (when Trim scale is on; see interaction handlers for dragging/add/delete)

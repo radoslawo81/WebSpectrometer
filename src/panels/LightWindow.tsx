@@ -175,6 +175,11 @@ export function LightWindow({ onClose }: { onClose: () => void }) {
             {row('CRI Ra', m?.cri ? `${fmt(m.cri.Ra, 1)}${criValid ? '' : ' *'}` : '—', t('Lq_RaTip'), true)}
             {row('R9', m?.cri ? `${fmt(m.cri.Ri[8], 1)}${criValid ? '' : ' *'}` : '—', t('Lq_R9Tip'))}
             {row(t('Lq_LER'), m ? `${fmt(m.ler)} lm/W` : '—', t('Lq_LERTip'))}
+            {row(
+              cur.uva && !cur.uva.covered ? `UV-A (${cur.uva.lo}–400 nm)` : 'UV-A (340–400 nm)',
+              cur.uva ? `${fmt(cur.uva.percent, cur.uva.percent < 10 ? 2 : 1)} %${cur.corrected ? '' : ' *'}` : '—',
+              t('Lq_UvaTip'),
+            )}
             {row(t('Lq_Lux'), luxValue != null ? `${fmt(luxValue, luxValue < 100 ? 1 : 0)} lx` : '—', t('Lq_LuxTip'), true)}
             {lux.distance != null && row(t('Lq_Cd'), luxValue != null ? `${fmt(luxValue * lux.distance * lux.distance, 0)} cd` : '—', t('Lq_CdTip'))}
             {lux.watts != null && row(t('Lq_LxW'), luxValue != null ? `${fmt(luxValue / lux.watts, 1)} lx/W` : '—', t('Lq_LxWTip'))}
@@ -211,7 +216,8 @@ export function LightWindow({ onClose }: { onClose: () => void }) {
               {t('Lq_WarnCoverage').replace('{range}', `${m.coverage[0]}–${m.coverage[1]}`)}
             </span>
           )}
-          {m?.duv != null && !criValid && <span style={{ color: 'rgb(160,90,0)' }}>{t('Lq_WarnDuv')}</span>}
+          {m?.notWhite && <span style={{ color: 'rgb(160,90,0)' }}>{t('Lq_WarnNotWhite')}</span>}
+          {!m?.notWhite && m?.duv != null && !criValid && <span style={{ color: 'rgb(160,90,0)' }}>{t('Lq_WarnDuv')}</span>}
           {luxStale && <span style={{ color: 'rgb(160,90,0)' }}>{t('Lq_WarnLuxStale')}</span>}
         </div>
 

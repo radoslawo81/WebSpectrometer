@@ -5,7 +5,7 @@ import { setSettings, useAppState } from '../app/store'
 import { useT } from '../i18n'
 import { pipeline } from '../app/engine'
 import { LINE_SETS, type LineSet } from '../core/lines'
-import { identifyPeaks, secondOrderStart, type IdentifiedPeak } from '../core/lineIdent'
+import { identifyPeaks, secondOrderStart, type GhostOrder, type IdentifiedPeak } from '../core/lineIdent'
 import { useWindowPos } from './useWindowPos'
 
 export function parseSets(s: string): LineSet[] {
@@ -22,14 +22,14 @@ export function LinesWindow({ onClose }: { onClose: () => void }) {
 
   useEffect(() => {
     const tick = () => {
-      setPeaks(identifyPeaks(pipeline.spatialFiltered, pipeline.nmMin, pipeline.nmMax, sets, settings.SecondOrder, 15))
+      setPeaks(identifyPeaks(pipeline.spatialFiltered, pipeline.nmMin, pipeline.nmMax, sets, settings.SecondOrder, 15, ghostOrders(settings)))
       setSo(secondOrderStart(pipeline.spatialFiltered, pipeline.nmMin, pipeline.nmMax))
     }
     tick()
     const id = setInterval(tick, 700)
     return () => clearInterval(id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings.LinesSets, settings.SecondOrder])
+  }, [settings.LinesSets, settings.SecondOrder, settings.Ghosts2, settings.Ghosts3])
 
   const toggleSet = (k: LineSet) => {
     const next = sets.includes(k) ? sets.filter((x) => x !== k) : [...sets, k]
@@ -58,6 +58,15 @@ export function LinesWindow({ onClose }: { onClose: () => void }) {
           <label title={t('Ln_SecondTip')}>
             <input type="checkbox" checked={settings.SecondOrder} onChange={(e) => setSettings({ SecondOrder: e.target.checked })} /> {t('Ln_Second')}
           </label>
+          <div style={{ display: 'flex', gap: 12 }} title={t('Ln_GhostsTip')}>
+            <span>{t('Ln_Ghosts')}</span>
+            <label>
+              <input type="checkbox" checked={settings.Ghosts2} onChange={(e) => setSettings({ Ghosts2: e.target.checked })} /> {t('Ln_Ghost2')}
+            </label>
+            <label>
+              <input type="checkbox" checked={settings.Ghosts3} onChange={(e) => setSettings({ Ghosts3: e.target.checked })} /> {t('Ln_Ghost3')}
+            </label>
+          </div>
         </div>
         {settings.SecondOrder && so != null && (
           <div style={{ fontSize: 11, color: 'rgb(140,80,0)' }}>{t('Ln_SecondZone').replace('{nm}', so.toFixed(0))}</div>
@@ -75,12 +84,20 @@ export function LinesWindow({ onClose }: { onClose: () => void }) {
               {peaks.map((p) => (
                 <tr key={p.nm.toFixed(2)}>
                   <td style={{ textAlign: 'right' }}>{p.nm.toFixed(2)}</td>
-                  <td style={{ paddingLeft: 8, color: p.match ? SET_COLORS[p.match.line.set] : 'rgb(140,140,140)' }}>
-                    {p.match
+                  <td style={{ paddingLeft: 8, color: p.ghost ? GHOST_COLOR : p.match ? SET_COLORS[p.match.line.set] : 'rgb(140,140,140)' }}>
+                    {p.ghost
+                      ? ghostLabel(p, t)
+                      : p.match
                       ? `${p.match.order === 2 ? '2× ' : ''}${p.match.line.label} ${p.match.line.nm.toFixed(2)}${p.match.line.approx ? ' ~' : ''}${p.match.line.kind === 'absorption' ? ` (${t('Ln_Abs')})` : ''}`
                       : t('Ln_Unknown')}
                   </td>
-                  <td style={{ textAlign: 'right' }}>{p.match ? `${p.match.delta >= 0 ? '+' : ''}${p.match.delta.toFixed(2)}` : ''}</td>
+                  <td style={{ textAlign: 'right' }}>
+                    {p.ghost
+                      ? `${(p.nm - p.ghost.order * p.ghost.parentNm >= 0 ? '+' : '') + (p.nm - p.ghost.order * p.ghost.parentNm).toFixed(1)}`
+                      : p.match
+                        ? `${p.match.delta >= 0 ? '+' : ''}${p.match.delta.toFixed(2)}`
+                        : ''}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -90,6 +107,23 @@ export function LinesWindow({ onClose }: { onClose: () => void }) {
       </div>
     </FloatingWindow>
   )
+}
+
+export const GHOST_COLOR = 'rgb(170,90,0)'
+
+export function ghostOrders(s: { Ghosts2: boolean; Ghosts3: boolean }): GhostOrder[] {
+  const o: GhostOrder[] = []
+  if (s.Ghosts2) o.push(2)
+  if (s.Ghosts3) o.push(3)
+  return o
+}
+
+// "2nd order of Hg 365.0" / "3rd order of 367 nm"
+export function ghostLabel(p: IdentifiedPeak, t: (k: string) => string, short = false): string {
+  const g = p.ghost
+  if (!g) return ''
+  const parent = g.parentMatch ? `${g.parentMatch.line.label} ${g.parentMatch.line.nm.toFixed(1)}` : `${g.parentNm.toFixed(0)} nm`
+  return short ? `${g.order}× ${parent}` : t(g.order === 2 ? 'Ln_GhostOf2' : 'Ln_GhostOf3').replace('{parent}', parent)
 }
 
 export const SET_COLORS: Record<LineSet, string> = {

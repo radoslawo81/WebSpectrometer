@@ -112,6 +112,42 @@ export interface CurrentLight {
   saturated: boolean
   calibrated: boolean // wavelength calibration present
   calibrationSuspect: boolean // calibration points imply very uneven dispersion (a misidentified line)
+  uva: UvaShare | null // UV-A share of the measured radiation (null without wavelength calibration)
+}
+
+// UV-A within the spectrometer's reach. Silicon webcam spectrometers with a DVD / plastic grating and
+// glass optics see nothing below ≈340 nm, so the band is integrated from UVA_LO, not from 315 nm.
+export const UVA_LO = 340
+export const UVA_HI = 400
+const VIS_HI = 780
+
+export interface UvaShare {
+  percent: number // UV-A energy / energy in UVA_LO–780 nm, %
+  lo: number // lower limit actually integrated (nm): UVA_LO, or higher if data/correction start later
+  covered: boolean // the whole UVA_LO–UVA_HI range has data
+}
+
+// Energy share of UVA_LO–UVA_HI nm in UVA_LO–780 nm (NaN samples skipped); null if no data in the band
+export function uvaShare(values: ArrayLike<number>, nmMin: number, nmMax: number): UvaShare | null {
+  const n = values.length
+  if (n < 10 || !(nmMax > nmMin)) return null
+  let uv = 0
+  let all = 0
+  let lo = Infinity
+  for (let i = 0; i < n; i++) {
+    const nm = nmMin + ((nmMax - nmMin) * i) / n
+    if (nm < UVA_LO || nm > VIS_HI) continue
+    const x = values[i]
+    if (!Number.isFinite(x)) continue
+    const val = Math.max(0, x)
+    all += val
+    if (nm <= UVA_HI) {
+      uv += val
+      if (nm < lo) lo = nm
+    }
+  }
+  if (!(all > 0) || !Number.isFinite(lo)) return null
+  return { percent: (100 * uv) / all, lo: Math.round(lo), covered: lo <= UVA_LO + 2 }
 }
 
 // A grating spectrometer is close to linear: nm per bin should not change much between calibration
@@ -137,8 +173,9 @@ export function currentLight(): CurrentLight {
   for (let i = 0; i < v.length; i++) if (v[i] > peak) peak = v[i]
   const saturated = peak >= 0.97 * FULL_SCALE
   const calibrationSuspect = calibrationLooksWrong()
-  if (!calibrated) return { metrics: null, corrected: false, saturated, calibrated, calibrationSuspect }
+  if (!calibrated) return { metrics: null, corrected: false, saturated, calibrated, calibrationSuspect, uva: null }
   const resp = state.response
-  const spd = resp ? toCieGrid(applyResponse(v, nmMin, nmMax, resp), nmMin, nmMax) : toCieGrid(v, nmMin, nmMax)
-  return { metrics: lightMetrics(spd), corrected: !!resp, saturated, calibrated, calibrationSuspect }
+  const corr = resp ? applyResponse(v, nmMin, nmMax, resp) : v
+  const spd = toCieGrid(corr, nmMin, nmMax)
+  return { metrics: lightMetrics(spd), corrected: !!resp, saturated, calibrated, calibrationSuspect, uva: uvaShare(corr, nmMin, nmMax) }
 }

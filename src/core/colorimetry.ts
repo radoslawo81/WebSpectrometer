@@ -166,7 +166,12 @@ export interface LightMetrics {
   photometricSum: number // Σ S·V(λ)·Δλ, relative units (× lux factor → lx)
   coverage: [number, number] // measured part of 380–780 nm
   coverageFraction: number // share of V(λ)-weighted range that was measured (0–1)
+  notWhite: boolean // |Duv| > CCT_DUV_MAX (or no CCT at all): CCT and CRI are undefined, reported as null
 }
+
+// CCT is only defined near the Planckian locus (ANSI C78.377 / CIE 15: |Duv| ≤ 0.05); farther away
+// (coloured LEDs, UV LEDs, grow lights) the "nearest black body" is meaningless (e.g. 100 000 K for UV).
+export const CCT_DUV_MAX = 0.05
 
 export function lightMetrics(spd: number[]): LightMetrics | null {
   let first = -1
@@ -191,14 +196,16 @@ export function lightMetrics(spd: number[]): LightMetrics | null {
   let radiant = 0
   for (let i = 0; i < CIE_N; i++) radiant += s[i]
   const ler = radiant > 0 ? (683 * t.Y) / radiant : 0
+  const white = !!cd && Math.abs(cd.duv) <= CCT_DUV_MAX
   return {
     x: t.X / sum,
     y: t.Y / sum,
     u,
     v,
-    cct: cd?.cct ?? null,
+    cct: white && cd ? cd.cct : null,
     duv: cd?.duv ?? null,
-    cri: cd && cd.cct >= 1000 && cd.cct <= 25000 ? cri(s, cd.cct) : null,
+    cri: white && cd && cd.cct >= 1000 && cd.cct <= 25000 ? cri(s, cd.cct) : null,
+    notWhite: !white,
     ler,
     photometricSum: t.Y * CIE_WL_STEP,
     coverage: [CIE_WL[first], CIE_WL[last]],

@@ -66,6 +66,9 @@ export function StatusBar({ measure }: { measure: SpectrumMeasure | null }) {
       <ToggleButton active={settings.Colors} onClick={() => setSettings({ Colors: !settings.Colors })}>
         {t('btn_Colors')}
       </ToggleButton>
+      <ToggleButton active={settings.BandsBar} title={t('Tip_Bands')} onClick={() => setSettings({ BandsBar: !settings.BandsBar })}>
+        {t('btn_Bands')}
+      </ToggleButton>
       <span className={`status-measure${runtime.trimInfo ? ' status-trim' : ''}`}>{measureText}</span>
       <div style={{ flex: 1 }} />
       <ToggleButton active={settings.TrimScale} onClick={() => setSettings({ TrimScale: !settings.TrimScale })}>
