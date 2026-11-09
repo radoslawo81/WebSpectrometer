@@ -6,11 +6,40 @@ import { ToggleButton } from '../components/ToggleButton'
 import { useAppState } from '../app/store'
 import { useT } from '../i18n'
 import { calibrateResponseFromCurrent, currentLight, setLux, setResponse, useLight, type CurrentLight } from '../app/lightStore'
-import { responseFromText, responseToText } from '../core/responseCal'
+import {
+  referenceFromText,
+  responseFromText,
+  responseSourceLabel,
+  responseToText,
+  type ReferenceSpec,
+  type ReferenceSpectrum,
+} from '../core/responseCal'
 import { downloadText, pickFile } from '../core/files'
 
 const POS_KEY = 'webspectrometer.lightWindowPos'
 const CRI_DUV_LIMIT = 0.0054 // CIE 13.3: CRI not meaningful farther from the Planckian locus
+
+const SRC_KEY = 'webspectrometer.responseSource'
+
+// Calibration sources: Planck presets (typical colour temperatures at full voltage), custom T, reference file
+const SOURCES: { id: string; label: string; T?: number }[] = [
+  { id: 'incand', label: 'Lq_SrcIncand', T: 2700 },
+  { id: 'halogen230', label: 'Lq_SrcHalogen230', T: 2900 },
+  { id: 'halogen12', label: 'Lq_SrcHalogen12', T: 3000 },
+  { id: 'illA', label: 'Lq_SrcIllA', T: 2856 },
+  { id: 'custom', label: 'Lq_SrcCustom' },
+  { id: 'file', label: 'Lq_SrcFile' },
+]
+
+function loadSource(): string {
+  try {
+    const s = localStorage.getItem(SRC_KEY)
+    if (s && SOURCES.some((x) => x.id === s)) return s
+  } catch {
+    // ignore
+  }
+  return 'illA'
+}
 
 const fmt = (v: number | null | undefined, d = 0) => (v == null || !Number.isFinite(v) ? '—' : v.toFixed(d))
 
@@ -41,6 +70,18 @@ export function LightWindow({ onClose }: { onClose: () => void }) {
   const [pos, setPos] = useState({ x: 380, y: 110 })
   const [cur, setCur] = useState<CurrentLight>(() => currentLight())
   const [lampT, setLampT] = useState<number | null>(2856)
+  const [source, setSourceState] = useState<string>(loadSource)
+  const [refSpec, setRefSpec] = useState<ReferenceSpectrum | null>(null)
+  const [maskAtmo, setMaskAtmo] = useState(true)
+  const setSource = (s: string) => {
+    setSourceState(s)
+    try {
+      localStorage.setItem(SRC_KEY, s)
+    } catch {
+      // ignore
+    }
+  }
+  const srcDef = SOURCES.find((s) => s.id === source) ?? SOURCES[3]
   const [luxMeter, setLuxMeter] = useState<number | null>(null)
   const [showAll, setShowAll] = useState(false)
   const [msg, setMsg] = useState('')
@@ -76,9 +117,27 @@ export function LightWindow({ onClose }: { onClose: () => void }) {
   const partial = m && (m.coverage[0] > 380 || m.coverage[1] < 780)
 
   const doResponseCal = () => {
-    if (!lampT) return setMsg(t('Lq_EnterLampT'))
-    const err = calibrateResponseFromCurrent(lampT)
+    let spec: ReferenceSpec
+    if (source === 'file') {
+      if (!refSpec) return setMsg(t('Lq_NeedRef'))
+      spec = { kind: 'file', ref: refSpec, maskAtmosphere: maskAtmo }
+    } else {
+      const T = srcDef.T ?? lampT
+      if (!T) return setMsg(t('Lq_EnterLampT'))
+      spec = { kind: 'planck', T }
+    }
+    const err = calibrateResponseFromCurrent(spec)
     setMsg(err ? t(err) : t('Lq_ResponseDone'))
+  }
+  const loadRef = async () => {
+    const f = await pickFile('.txt,.csv,.dat')
+    if (!f) return
+    const r = referenceFromText(await f.text(), f.name)
+    if (typeof r === 'string') setMsg(t(r))
+    else {
+      setRefSpec(r)
+      setMsg(t('Lq_RefLoaded'))
+    }
   }
   const doLuxCal = () => {
     if (!luxMeter) return setMsg(t('Lq_EnterLux'))
@@ -160,10 +219,41 @@ export function LightWindow({ onClose }: { onClose: () => void }) {
         <fieldset style={{ border: '1px solid var(--border)', padding: '4px 6px' }}>
           <legend style={{ fontSize: 11 }}>{t('Lq_ResponseTitle')}</legend>
           <div className="field-row" style={{ flexWrap: 'wrap' }}>
-            <span>{t('Lq_LampT')}</span>
-            <NumInput value={lampT} onChange={setLampT} width={60} />
-            <span>K</span>
-            <ToggleButton onClick={doResponseCal} title={t('Lq_ResponseTip')}>
+            <span>{t('Lq_Source')}</span>
+            <select value={source} onChange={(e) => setSource(e.target.value)} title={t('Lq_SourceTip')}>
+              {SOURCES.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {t(s.label)}
+                </option>
+              ))}
+            </select>
+            {source === 'custom' && (
+              <>
+                <NumInput value={lampT} onChange={setLampT} width={60} />
+                <span>K</span>
+              </>
+            )}
+            {source === 'file' && (
+              <ToggleButton onClick={() => void loadRef()} title={t('Lq_LoadRefTip')}>
+                {t('Lq_LoadRef')}
+              </ToggleButton>
+            )}
+          </div>
+          {source === 'file' && (
+            <div className="field-row" style={{ flexWrap: 'wrap', fontSize: 11 }}>
+              <span style={{ color: refSpec ? undefined : 'var(--text-muted)' }}>
+                {refSpec
+                  ? `${refSpec.name} (${Math.round(refSpec.nms[0])}–${Math.round(refSpec.nms[refSpec.nms.length - 1])} nm)`
+                  : t('Lq_NoRef')}
+              </span>
+              <label title={t('Lq_MaskAtmoTip')} style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                <input type="checkbox" checked={maskAtmo} onChange={(e) => setMaskAtmo(e.target.checked)} />
+                {t('Lq_MaskAtmo')}
+              </label>
+            </div>
+          )}
+          <div className="field-row" style={{ flexWrap: 'wrap' }}>
+            <ToggleButton onClick={doResponseCal} title={t(source === 'file' ? 'Lq_ResponseTipRef' : 'Lq_ResponseTip')}>
               {t('Lq_Calibrate')}
             </ToggleButton>
             <div style={{ flex: 1 }} />
@@ -175,14 +265,14 @@ export function LightWindow({ onClose }: { onClose: () => void }) {
               <>
                 {t('Lq_ResponseStatus')
                   .replace('{range}', `${response.validLo}–${response.validHi}`)
-                  .replace('{T}', Number.isFinite(response.lampT) ? String(response.lampT) : '?')
+                  .replace('{T}', responseSourceLabel(response))
                   .replace('{time}', new Date(response.time).toLocaleString())}{' '}
                 <a href="#" onClick={(e) => (e.preventDefault(), setResponse(null))}>
                   {t('Lq_Clear')}
                 </a>
               </>
             ) : (
-              t('Lq_ResponseHint')
+              t(source === 'file' ? 'Lq_RefHint' : 'Lq_ResponseHint')
             )}
           </div>
         </fieldset>

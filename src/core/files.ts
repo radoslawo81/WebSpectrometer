@@ -61,8 +61,11 @@ export function getSpectrumText(): string {
   // Web-only: record the spectral response correction (unknown keys are ignored when loading)
   const resp = activeResponse()
   if (resp) {
-    const T = Number.isFinite(resp.lampT) ? `${resp.lampT} K, ` : ''
-    lines.push(`ResponseCorrection${sep}halogen ${T}valid ${resp.validLo}-${resp.validHi} nm`)
+    const src =
+      resp.source === 'file'
+        ? `reference ${(resp.refName || '?').replace(/[;,]/g, ' ')}, `
+        : `halogen ${Number.isFinite(resp.lampT) ? `${resp.lampT} K, ` : ''}`
+    lines.push(`ResponseCorrection${sep}${src}valid ${resp.validLo}-${resp.validHi} nm`)
   }
   lines.push('-----------------------')
   lines.push(`Nanometers${sep}Intensity`)

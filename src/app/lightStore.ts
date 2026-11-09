@@ -1,7 +1,7 @@
 // State for the Light quality window (web-only): spectral response calibration and lux calibration.
 // Both are kept in localStorage (per site origin) and can also be saved/loaded as files.
 import { useSyncExternalStore } from 'react'
-import { applyResponse, calibrateResponse, type ResponseCalibration } from '../core/responseCal'
+import { applyResponse, calibrateResponseWith, type ReferenceSpec, type ResponseCalibration } from '../core/responseCal'
 import { lightMetrics, toCieGrid, type LightMetrics } from '../core/colorimetry'
 import { pipeline, setResponseCorrection } from './engine'
 import { getState } from './store'
@@ -84,9 +84,15 @@ export function setResponse(r: ResponseCalibration | null): void {
 // Hand the stored calibration to the engine at start-up
 setResponseCorrection(state.response)
 
-export function calibrateResponseFromCurrent(lampT: number): string | null {
+export function calibrateResponseFromCurrent(spec: ReferenceSpec | number): string | null {
+  const s: ReferenceSpec = typeof spec === 'number' ? { kind: 'planck', T: spec } : spec
+  // A clipped spectrum would bake the clipping into the correction
+  const v = pipeline.uncorrected
+  let peak = 0
+  for (let i = 0; i < v.length; i++) if (v[i] > peak) peak = v[i]
+  if (peak >= 0.97 * FULL_SCALE) return 'Lq_ErrSaturated'
   // Always from the spectrum before any response correction
-  const r = calibrateResponse(pipeline.uncorrected, pipeline.nmMin, pipeline.nmMax, lampT)
+  const r = calibrateResponseWith(v, pipeline.nmMin, pipeline.nmMax, s)
   if (typeof r === 'string') return r
   setResponse(r)
   return null
