@@ -17,7 +17,7 @@ WebSpectrometer2.0 is a standalone continuation of jayden-sudo/WebSpectrometer (
 - FWHM, spectrum comparison per band, HDR, time log, saturation warning.
 - Transmission of glasses, filters and windows (τv, sunglass category, UV/HEV/IR blocking); absorbance with Beer–Lambert.
 - CSV/TXT export compatible with Theremino Spectrometer files, image export, HTML/PDF report.
-- Interface: English and Polish (base features also in Chinese, Italian, French, Portuguese).
+- Interface: English and Polish.
 
 ## How to use (typical flow)
 

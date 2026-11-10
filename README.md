@@ -42,7 +42,7 @@ No installation: open it in a Chromium-based browser (Chrome, Edge, Opera, Brave
 **Data**
 - CSV/TXT spectra (compatible with Theremino Spectrometer files), images, timed auto-save
 - HTML measurement report (print to PDF)
-- Interface in English and Polish (plus the original Chinese, Italian, French and Portuguese for the base features)
+- Interface in English and Polish
 
 ![White LED with light-quality panel](docs/images/white-led-light-quality.jpg)
 

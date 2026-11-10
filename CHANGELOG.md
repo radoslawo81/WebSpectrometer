@@ -9,7 +9,7 @@ Standalone project **WebSpectrometer2.0**, detached from the fork network of jay
 - New README (English and Polish), changelog, history and credits; screenshots from own measurements
 - Page metadata, web-app manifest, sitemap and AI-agent description (`llms.txt`) updated for the new project
 - About dialog and Help menu point to the new repository
-- Documentation languages limited to English and Polish (the app UI keeps its other languages for the base features)
+- English and Polish only: the Chinese (simplified and traditional), Italian, French and Portuguese interface and README translations of the base project were removed; a language saved by an older version falls back to the browser language
 
 ## 1.2.0 – 2026-11-09
 

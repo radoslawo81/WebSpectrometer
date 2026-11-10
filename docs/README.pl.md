@@ -42,7 +42,7 @@ Bez instalacji: otwórz w przeglądarce opartej na Chromium (Chrome, Edge, Opera
 **Dane**
 - Widma CSV/TXT (zgodne z plikami Theremino Spectrometer), obrazy, automatyczny zapis co zadany czas
 - Raport z pomiaru w HTML (wydruk do PDF)
-- Interfejs po polsku i angielsku (oraz oryginalne języki chiński, włoski, francuski i portugalski dla funkcji bazowych)
+- Interfejs po polsku i angielsku
 
 ![Biała LED z panelem jakości światła](images/white-led-light-quality.jpg)
 

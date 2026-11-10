@@ -12,20 +12,11 @@ import icoLoadIrradianceCoeffs from './icons/loadIrradianceCoeffs.png'
 import icoHelpLinkToFiles from './icons/helpLinkToFiles.png'
 import icoHelpOpenProgramFolder from './icons/helpOpenProgramFolder.png'
 import flagENG from './icons/flagENG.png'
-import flagITA from './icons/flagITA.png'
-import flagFRA from './icons/flagFRA.png'
-import flagPOR from './icons/flagPOR.png'
-import flagCHI from './icons/flagCHI.png'
 import flagPOL from './icons/flagPOL.png' // web addition
 
-// Language menu flags per Form1.resx (CHT is a web addition — it reuses the CHI flag)
+// Language menu flags (WebSpectrometer2.0: English and Polish)
 const LANGUAGE_FLAGS: Record<string, string> = {
   ENG: flagENG,
-  ITA: flagITA,
-  FRA: flagFRA,
-  POR: flagPOR,
-  CHI: flagCHI,
-  CHT: flagCHI,
   POL: flagPOL,
 }
 

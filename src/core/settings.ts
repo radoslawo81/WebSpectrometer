@@ -130,7 +130,7 @@ export const DEFAULT_SETTINGS: Settings = {
   FileFormat: 'JPG',
   SaveTime: 0,
   Repeat: false,
-  Language: 'CHI',
+  Language: 'ENG',
   OptionsVisible: true,
   InfoVisible: false,
   InfoX: -1,
@@ -141,17 +141,9 @@ const STORAGE_KEY = 'webspectrometer.settings'
 
 // Default language follows the browser language (bug1.md #2); a manually set language (stored in settings) takes precedence
 function detectBrowserLanguage(): string {
+  // WebSpectrometer2.0 ships English and Polish only
   const lang = (navigator.language || '').toLowerCase()
-  if (lang.startsWith('zh')) {
-    // Traditional-Chinese regions → CHT, other Chinese → CHI
-    return /tw|hk|mo|hant/.test(lang) ? 'CHT' : 'CHI'
-  }
-  if (lang.startsWith('it')) return 'ITA'
-  if (lang.startsWith('fr')) return 'FRA'
-  if (lang.startsWith('pt')) return 'POR'
-  if (lang.startsWith('pl')) return 'POL'
-  if (lang.startsWith('en')) return 'ENG'
-  return 'ENG'
+  return lang.startsWith('pl') ? 'POL' : 'ENG'
 }
 
 export function loadSettings(): Settings {
@@ -159,8 +151,11 @@ export function loadSettings(): Settings {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return defaults
-    // Stored settings (including a manually chosen language) override defaults
-    return { ...defaults, ...JSON.parse(raw) }
+    // Stored settings (including a manually chosen language) override defaults; a language saved by
+    // an older version that is no longer shipped (CHI, CHT, ITA, FRA, POR) falls back to the browser one
+    const merged = { ...defaults, ...JSON.parse(raw) } as Settings
+    if (merged.Language !== 'ENG' && merged.Language !== 'POL') merged.Language = defaults.Language
+    return merged
   } catch {
     return defaults
   }
