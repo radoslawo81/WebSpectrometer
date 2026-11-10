@@ -245,7 +245,7 @@ export function responseToText(cal: ResponseCalibration): string {
   const src =
     cal.source === 'file' ? `reference ${(cal.refName || '?').replace(/,/g, ' ')}` : `halogen ${cal.lampT} K`
   const lines = [
-    `# Spectral response correction (WebSpectrometer fork), ${src}, ${new Date(cal.time).toISOString()}`,
+    `# Spectral response correction (WebSpectrometer2.0), ${src}, ${new Date(cal.time).toISOString()}`,
     `# valid ${cal.validLo}-${cal.validHi} nm; multiply the measured spectrum by coeff`,
   ]
   cal.nms.forEach((nm, i) => {

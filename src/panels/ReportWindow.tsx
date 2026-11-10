@@ -124,7 +124,7 @@ img{width:100%;border:1px solid #ccc;margin-top:8px}.notes{white-space:pre-wrap;
 ${img ? `<img src="${img}" alt="spectrum">` : ''}
 ${notes ? `<h2>${esc(t('Rp_Notes'))}</h2><div class="notes">${esc(notes)}</div>` : ''}
 ${rows.join('\n')}
-<p style="color:#999;font-size:11px;margin-top:24px">WebSpectrometer · ${esc(location.href)}</p>
+<p style="color:#999;font-size:11px;margin-top:24px">WebSpectrometer2.0 · ${esc(location.href)}</p>
 </body></html>`
   }
 

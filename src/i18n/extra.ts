@@ -12,7 +12,7 @@ export const EXTRA_KEYS: Record<LangCode, Record<string, string>> = {
     About_Version: 'Version',
     About_Based1: 'Built on',
     About_Based2: 'and its browser version',
-    About_Credits: 'The new features of this fork (and their code) were made by Claude (Anthropic AI) from the ideas, requirements and measurements of Radek (radoslawo81).',
+    About_Credits: 'The new features of WebSpectrometer2.0 (and their code) were made by Claude (Anthropic AI) from the ideas, requirements and measurements of Radek (radoslawo81).',
     btn_Controls: 'Camera & filters',
     Tip_Controls: 'Show or hide the Video input device and Filters panels (connect / disconnect the camera, averaging, reference, background)',
     Lq_Details: 'Calibration & details…',

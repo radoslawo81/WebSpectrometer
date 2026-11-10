@@ -154,8 +154,8 @@ export function App() {
   )
 }
 
-const REPO_URL = 'https://github.com/radoslawo81/WebSpectrometer'
-const SITE_URL = 'https://radoslawo81.github.io/WebSpectrometer/'
+const REPO_URL = 'https://github.com/radoslawo81/WebSpectrometer2.0'
+const SITE_URL = 'https://radoslawo81.github.io/WebSpectrometer2.0/'
 
 function AboutDialog({ onClose }: { onClose: () => void }) {
   const t = useT()
@@ -178,7 +178,7 @@ function AboutDialog({ onClose }: { onClose: () => void }) {
         onClick={(e) => e.stopPropagation()}
       >
         <img src={aboutLogo} alt="" draggable={false} style={{ width: 53, height: 50, objectFit: 'contain' }} />
-        <h3 style={{ marginBottom: 4 }}>WebSpectrometer</h3>
+        <h3 style={{ marginBottom: 4 }}>WebSpectrometer2.0</h3>
         <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 10 }}>
           {t('About_Version')} {__APP_VERSION__}
         </div>
@@ -197,13 +197,13 @@ function AboutDialog({ onClose }: { onClose: () => void }) {
         <p style={{ margin: '8px 0', fontSize: 11, color: 'var(--text-muted)' }}>{t('About_Credits')}</p>
         <p style={{ margin: '8px 0', fontSize: 12 }}>
           <a href={REPO_URL} target="_blank" rel="noreferrer" style={{ fontWeight: 600 }}>
-            github.com/radoslawo81/WebSpectrometer
+            github.com/radoslawo81/WebSpectrometer2.0
           </a>
           <br />
           <a href={SITE_URL} target="_blank" rel="noreferrer">
-            radoslawo81.github.io/WebSpectrometer
+            radoslawo81.github.io/WebSpectrometer2.0
           </a>
-          {' · GNU GPL'}
+          {' · GNU GPL v3'}
         </p>
         {__COMMIT_SHA__ && (
           <p style={{ margin: '8px 0', fontSize: 11, color: 'var(--text-muted)' }}>

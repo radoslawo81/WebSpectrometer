@@ -4,41 +4,40 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>Spectrometer — Free Browser-Based DIY Spectrometer Software</title>
+    <title>WebSpectrometer2.0 — Browser-Based Spectrometer Software for DIY and Webcam Spectrometers</title>
     <meta
       name="description"
-      content="Free, open-source spectrometer software that runs in your browser. Turn a webcam and a diffraction grating into a real spectrometer: live spectrum analysis, wavelength calibration with fluorescent lamps, peak detection, and CSV export. All processing happens locally in your browser — no data is uploaded. Works on Linux, macOS and Windows with any Chromium-based browser (Chrome, Edge, Opera…)."
+      content="Free, open-source spectrometer software that runs in your browser. Live spectrum from a webcam or DIY spectrometer, automatic wavelength and spectral response calibration, light quality (CCT, CRI, R9), UV analysis, transmission, absorbance and CSV export. All processing happens locally in your browser — no data is uploaded. Works on Linux, macOS and Windows with any Chromium-based browser (Chrome, Edge, Opera…)."
     />
     <meta
       name="keywords"
-      content="spectrometer, DIY spectrometer, web spectrometer, spectroscopy, webcam spectrometer, diffraction grating, spectrum analysis, wavelength calibration, emission spectrum, open source, Theremino alternative"
+      content="spectrometer, DIY spectrometer, web spectrometer, spectroscopy, webcam spectrometer, diffraction grating, spectrum analysis, wavelength calibration, CRI, CCT, UV, light quality, Little Garden spectrometer, emission spectrum, open source, Theremino alternative"
     />
-    <meta name="author" content="Spectrometer contributors" />
-    <link rel="canonical" href="https://spectrometer-web.vercel.app/" />
+    <meta name="author" content="radoslawo81 and contributors" />
+    <link rel="canonical" href="https://radoslawo81.github.io/WebSpectrometer2.0/" />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Spectrometer" />
-    <meta property="og:title" content="Spectrometer — Free Browser-Based DIY Spectrometer Software" />
+    <meta property="og:site_name" content="WebSpectrometer2.0" />
+    <meta property="og:title" content="WebSpectrometer2.0 — Browser-Based Spectrometer Software for DIY and Webcam Spectrometers" />
     <meta
       property="og:description"
       content="Turn a webcam and a diffraction grating into a real spectrometer, right in your browser. Live spectrum analysis, wavelength calibration, peak detection, CSV export. Free, open source, and 100% local — no data leaves your browser."
     />
-    <meta property="og:url" content="https://spectrometer-web.vercel.app/" />
-    <meta property="og:image" content="https://spectrometer-web.vercel.app/og-image.png" />
+    <meta property="og:url" content="https://radoslawo81.github.io/WebSpectrometer2.0/" />
+    <meta property="og:image" content="https://radoslawo81.github.io/WebSpectrometer2.0/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Spectrometer showing a calibrated fluorescent lamp emission spectrum with labeled mercury peaks" />
+    <meta property="og:image:alt" content="WebSpectrometer2.0 measuring a white LED bulb: live spectrum with CCT, CRI Ra and R9" />
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Spectrometer — Free Browser-Based DIY Spectrometer Software" />
+    <meta name="twitter:title" content="WebSpectrometer2.0 — Browser-Based Spectrometer Software for DIY and Webcam Spectrometers" />
     <meta
       name="twitter:description"
       content="Turn a webcam and a diffraction grating into a real spectrometer, right in your browser. Free and open source."
     />
-    <meta name="twitter:image" content="https://spectrometer-web.vercel.app/og-image.png" />
-    <meta name="twitter:creator" content="@jayden_sudo" />
+    <meta name="twitter:image" content="https://radoslawo81.github.io/WebSpectrometer2.0/og-image.png" />
 
     <meta name="theme-color" content="#fff5d2" />
     <link rel="manifest" href="/manifest.webmanifest" />
@@ -51,24 +50,23 @@
       {
         "@context": "https://schema.org",
         "@type": "WebApplication",
-        "name": "Web Spectrometer",
-        "url": "https://spectrometer-web.vercel.app/",
-        "description": "Free, open-source spectrometer software that runs in the browser. It converts the spectral image captured by a webcam (or a TCD1304/TCD1254 linear sensor over Web Serial) into a live spectrum curve, with multi-point wavelength calibration, peak/dip detection, filtering, irradiance correction and CSV/TXT export compatible with Theremino Spectrometer files. All image processing happens locally in the browser; no video or spectrum data is ever uploaded. This is an AI-assisted implementation created by Jayden with reference to Theremino Spectrometer.",
+        "name": "WebSpectrometer2.0",
+        "url": "https://radoslawo81.github.io/WebSpectrometer2.0/",
+        "description": "Free, open-source spectrometer software that runs in the browser. It converts the spectral image captured by a webcam (or a TCD1304/TCD1254 linear sensor over Web Serial) into a live spectrum curve, with multi-point wavelength calibration, peak/dip detection, filtering, irradiance correction and CSV/TXT export compatible with Theremino Spectrometer files. All image processing happens locally in the browser; no video or spectrum data is ever uploaded. Adds automatic wavelength calibration, spectral response calibration, light quality (CCT, Duv, CRI, R9), UV-A share, higher-order ghost flagging, transmission and absorbance. Developed by radoslawo81 with Claude (Anthropic), based on jayden-sudo/WebSpectrometer and Theremino Spectrometer.",
         "author": {
           "@type": "Person",
-          "name": "Jayden",
-          "url": "https://github.com/jayden-sudo",
-          "sameAs": ["https://x.com/jayden_sudo", "https://github.com/jayden-sudo"]
+          "name": "radoslawo81",
+          "url": "https://github.com/radoslawo81"
         },
-        "sameAs": ["https://github.com/jayden-sudo/WebSpectrometer"],
-        "isBasedOn": "https://www.theremino.com/en/downloads/automation#spectrometer",
+        "sameAs": ["https://github.com/radoslawo81/WebSpectrometer2.0"],
+        "isBasedOn": ["https://github.com/jayden-sudo/WebSpectrometer", "https://www.theremino.com/en/downloads/automation#spectrometer"],
         "applicationCategory": "UtilitiesApplication",
         "operatingSystem": "Any (requires a Chromium-based browser)",
         "browserRequirements": "Requires a Chromium-based browser (Chrome, Edge, Opera, Brave…); Firefox and Safari are not supported (no Web Serial). Camera access requires HTTPS",
         "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
         "license": "https://www.gnu.org/licenses/gpl-3.0.html",
-        "screenshot": "https://spectrometer-web.vercel.app/og-image.png",
-        "inLanguage": ["en", "zh-CN", "zh-TW", "it", "fr", "pt"],
+        "screenshot": "https://radoslawo81.github.io/WebSpectrometer2.0/og-image.png",
+        "inLanguage": ["en", "pl", "zh-CN", "zh-TW", "it", "fr", "pt"],
         "featureList": [
           "Live spectrum analysis from a webcam",
           "Multi-point wavelength calibration (Trim points) with fluorescent lamp mercury lines 436/546 nm",
@@ -78,21 +76,12 @@
           "Irradiance coefficient correction",
           "CSV/TXT data export compatible with Theremino Spectrometer",
           "TCD1304/TCD1254 linear sensor support via Web Serial",
-          "6-language interface",
+          "Interface in English and Polish (base features also in Chinese, Italian, French and Portuguese)",
           "100% local processing — no data is uploaded"
         ]
       }
     </script>
 
-     <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-T0818KE0F3"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-T0818KE0F3');
-    </script>
   </head>
   <body>
     <div id="root">
@@ -130,7 +119,7 @@
             box-sizing: border-box;
           "
         >
-          <h1 style="margin: 0 0 4px; font-size: 26px; letter-spacing: 0.5px">Web Spectrometer</h1>
+          <h1 style="margin: 0 0 4px; font-size: 26px; letter-spacing: 0.5px">WebSpectrometer2.0</h1>
           <!-- spectrum accent bar with a moving scan highlight = loading indicator -->
           <div style="position: relative; height: 10px; border-radius: 5px; overflow: hidden; margin: 10px 0 18px">
             <div
@@ -156,30 +145,28 @@
             ></div>
           </div>
           <p style="margin: 0 0 14px; line-height: 1.55">
-            A free, open-source DIY spectrometer that runs entirely in your browser. Point a webcam at a diffraction
-            grating and get a live, calibrated emission spectrum — no installation required.
+            Free, open-source software for DIY and webcam spectrometers that runs entirely in your browser — live,
+            calibrated spectra and light-quality measurements, no installation required.
           </p>
           <ul style="margin: 0 0 14px; padding-left: 20px; line-height: 1.65">
-            <li>Analyze light sources: emission lines of fluorescent lamps, LEDs and lasers in real time</li>
-            <li>Multi-point wavelength calibration against the 436/546 nm mercury lines</li>
-            <li>Automatic peak/dip detection, CSV/TXT export compatible with Theremino Spectrometer</li>
-            <li>TCD1304/TCD1254 linear CCD sensors supported via Web Serial</li>
+            <li>Automatic wavelength calibration from reference lamps, spectral response calibration</li>
+            <li>Light quality: CCT, Duv, CRI Ra, R9 · UV-A share · UVC/UVB/UVA/colour/IR band bar</li>
+            <li>Spectral line identification with 2nd/3rd-order ghost flagging, FWHM, compare, HDR</li>
+            <li>Transmission of glasses and filters, absorbance (Beer–Lambert), CSV/TXT export, PDF report</li>
           </ul>
           <p style="margin: 0 0 14px; line-height: 1.55; font-weight: bold">
             🔒 Your privacy: all image processing happens locally in your browser — no data is ever uploaded.
           </p>
           <p style="margin: 0 0 18px; font-size: 12px; color: rgb(110, 100, 70); line-height: 1.5">
             Runs in Chromium-based browsers (Chrome, Edge, Opera…); Firefox and Safari are not supported (no Web
-            Serial) · Works on Linux, macOS and Windows · GNU GPL v3. An AI-assisted implementation by Jayden,
-            created with reference to Theremino Spectrometer.
+            Serial) · Works on Linux, macOS and Windows · GNU GPL v3. Based on jayden-sudo/WebSpectrometer
+            and Theremino Spectrometer V5.0; developed by radoslawo81 with Claude (Anthropic).
           </p>
           <p style="margin: 0; font-size: 12px; border-top: 1px solid rgb(220, 205, 160); padding-top: 12px">
             <span style="color: rgb(110, 100, 70)">Loading the application…</span>
             <noscript><strong>JavaScript is required — please enable it to run the app.</strong></noscript>
             <span style="float: right">
-              <a href="https://github.com/jayden-sudo/WebSpectrometer" style="color: rgb(140, 90, 0)">GitHub</a>
-              &nbsp;·&nbsp;
-              <a href="https://x.com/jayden_sudo" style="color: rgb(140, 90, 0)">@jayden_sudo</a>
+              <a href="https://github.com/radoslawo81/WebSpectrometer2.0" style="color: rgb(140, 90, 0)">GitHub</a>
               &nbsp;·&nbsp;
               <a href="https://www.theremino.com" style="color: rgb(140, 90, 0)">theremino.com</a>
             </span>

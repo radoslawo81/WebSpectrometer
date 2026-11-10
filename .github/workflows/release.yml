@@ -35,13 +35,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.event.release.tag_name || inputs.tag }}
         run: |
-          mv dist "WebSpectrometer-${TAG}"
-          zip -qr "WebSpectrometer-${TAG}.zip" "WebSpectrometer-${TAG}"
+          mv dist "WebSpectrometer2.0-${TAG}"
+          zip -qr "WebSpectrometer2.0-${TAG}.zip" "WebSpectrometer2.0-${TAG}"
           if [ "$GITHUB_EVENT_NAME" = "release" ]; then
-            gh release upload "$TAG" "WebSpectrometer-${TAG}.zip" --clobber
+            gh release upload "$TAG" "WebSpectrometer2.0-${TAG}.zip" --clobber
           else
             notes=".github/release-notes/${TAG}.md"
             [ -f "$notes" ] || notes=/dev/null
-            gh release create "$TAG" "WebSpectrometer-${TAG}.zip" --target "$GITHUB_SHA" \
-              --title "WebSpectrometer ${TAG}" --notes-file "$notes" --latest
+            gh release create "$TAG" "WebSpectrometer2.0-${TAG}.zip" --target "$GITHUB_SHA" \
+              --title "WebSpectrometer2.0 ${TAG}" --notes-file "$notes" --latest
           fi

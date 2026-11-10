@@ -139,7 +139,7 @@ export function MenuBar({ onAbout }: { onAbout: () => void }) {
         <>
           {item(t('Menu_Help_LinkToFiles'), () => window.open('https://www.theremino.com/en/downloads/automation#spectrometer', '_blank'), undefined, icoHelpLinkToFiles)}
           <div className="menu-separator" />
-          {item(t('Menu_Help_GitHubReadme'), () => window.open('https://github.com/jayden-sudo/WebSpectrometer#readme', '_blank'), undefined, icoHelpOpenProgramFolder)}
+          {item(t('Menu_Help_GitHubReadme'), () => window.open('https://github.com/radoslawo81/WebSpectrometer2.0#readme', '_blank'), undefined, icoHelpOpenProgramFolder)}
         </>
       ),
     },

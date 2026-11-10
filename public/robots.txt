@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://spectrometer-web.vercel.app/sitemap.xml
+Sitemap: https://radoslawo81.github.io/WebSpectrometer2.0/sitemap.xml

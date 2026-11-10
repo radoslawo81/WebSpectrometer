@@ -1,35 +1,39 @@
-# Web Spectrometer
+# WebSpectrometer2.0
 
-> Free, open-source DIY spectrometer software that runs entirely in the browser. It converts the spectral image captured by a webcam (or a TCD1304/TCD1254 linear CCD sensor over Web Serial) into a live, calibrated spectrum curve.
+> Free, open-source software for DIY and webcam spectrometers that runs entirely in the browser. It converts the spectral image captured by a webcam spectrometer (or a TCD1304/TCD1254 linear CCD sensor over Web Serial) into a live, calibrated spectrum and computes light-quality, UV, transmission and absorbance results.
 
 ## What it is
 
-Web Spectrometer turns a webcam plus a diffraction grating into a working optical spectrometer. It is an independent web implementation whose UI and features are inspired by Theremino Spectrometer (Windows-only); this project brings the same workflow to Linux, macOS and Windows via any Chromium-based browser (Chrome, Edge, Opera, Brave…). Firefox and Safari are not supported (no Web Serial). All image processing happens locally in the browser; no video or spectrum data is uploaded. License: GNU GPL v3.
+WebSpectrometer2.0 is a standalone continuation of jayden-sudo/WebSpectrometer (a browser port of the Windows program Theremino Spectrometer V5.0). It runs in any Chromium-based browser (Chrome, Edge, Opera, Brave…) on Linux, macOS and Windows; Firefox and Safari are not supported (no Web Serial). All image processing happens locally in the browser; no video or spectrum data is uploaded. License: GNU GPL v3.
 
 ## Key capabilities
 
-- Live spectrum analysis: real-time conversion of the camera ROI into a spectrum curve at the camera frame rate.
-- Wavelength calibration: multi-point "Trim points" calibration; the standard workflow uses the 436 nm and 546 nm mercury lines of any fluorescent lamp. Calibration data persists in the browser (localStorage) and is file-compatible with Theremino Spectrometer calibration files.
-- Peak/dip detection with automatic wavelength labels.
-- Filtering pipeline: frame averaging, rising/falling speed (IIR), spatial averaging, reference normalization and background subtraction.
-- Display: wavelength-true coloring (380-780 nm), logarithmic intensity scale, zoom/pan.
-- Data export: CSV/TXT spectrum files (TAB/semicolon/comma separators) interchangeable with the Windows Theremino Spectrometer; JPG/PNG image export; timed and repeated auto-save.
-- Hardware: any UVC webcam; optionally TCD1304/TCD1254 linear CCD sensors via Web Serial (1 Mbaud, Theremino Master protocol).
-- Interface languages: English, Simplified Chinese, Traditional Chinese, Italian, French, Portuguese.
+- Live spectrum from a UVC webcam spectrometer (e.g. Little Garden Spectrometer) or a TCD1304/TCD1254 linear sensor.
+- Wavelength calibration: manual multi-point (Trim points) or automatic from reference lamps (fluorescent/CFL, UVC Hg/Ar, neon, sodium, hydrogen, helium, sunlight Fraunhofer lines).
+- Spectral response calibration: incandescent / halogen presets (Planck curve), CIE illuminant A, custom colour temperature, or a tabulated reference spectrum file (e.g. a ground-level solar spectrum, with O2/H2O absorption bands skipped).
+- Light quality: CCT, Duv, x/y, CRI Ra and R1–R14 (R9), luminous efficacy of radiation, illuminance; CCT/CRI only for white light (|Duv| ≤ 0.05).
+- UV: UV-A share (340–400 nm), UVC/UVB/UVA/visible/IR band bar under the graph.
+- Spectral line identification (Hg, Ar, Ne, Na, H, He, CFL phosphors, Fraunhofer); 2nd- and 3rd-order diffraction ghosts flagged instead of misidentified.
+- FWHM, spectrum comparison per band, HDR, time log, saturation warning.
+- Transmission of glasses, filters and windows (τv, sunglass category, UV/HEV/IR blocking); absorbance with Beer–Lambert.
+- CSV/TXT export compatible with Theremino Spectrometer files, image export, HTML/PDF report.
+- Interface: English and Polish (base features also in Chinese, Italian, French, Portuguese).
 
 ## How to use (typical flow)
 
-1. Open the site in a Chromium-based browser such as Chrome, Edge or Opera (camera requires HTTPS; Firefox/Safari are not supported).
-2. Connect the webcam of the DIY spectrometer (webcam + diffraction grating + slit).
-3. Calibrate once: Tools → Trim points → Fluorescent 436 546, then drag the 436/546 labels onto the mercury lines of a fluorescent lamp.
-4. Analyze any light source; save data files or images as needed.
+1. Open the site in Chrome or Edge (camera requires HTTPS), connect the spectrometer camera, set manual exposure.
+2. Calibrate wavelengths with a fluorescent or UVC lamp (Tools → Auto calibration…).
+3. Calibrate the spectral response with an incandescent or halogen lamp (Light quality → Calibration & details…), then enable "Corrected".
+4. Measure light sources; use a diffuser on the slit, avoid saturation.
 
 ## Documentation and source
 
-- Source repository: https://github.com/jayden-sudo/WebSpectrometer
-- README (English): https://github.com/jayden-sudo/WebSpectrometer/blob/main/README.md
-- Translations: Simplified Chinese, Traditional Chinese, Italian, French, Portuguese under /docs/ in the repository
+- App: https://radoslawo81.github.io/WebSpectrometer2.0/
+- Source repository: https://github.com/radoslawo81/WebSpectrometer2.0
+- README (English): https://github.com/radoslawo81/WebSpectrometer2.0/blob/main/README.md
+- README (Polish): https://github.com/radoslawo81/WebSpectrometer2.0/blob/main/docs/README.pl.md
+- Changelog: https://github.com/radoslawo81/WebSpectrometer2.0/blob/main/CHANGELOG.md
 
 ## Credits
 
-An AI-assisted implementation created by Jayden (https://x.com/jayden_sudo) with reference to Theremino Spectrometer. UI and functionality inspired by Theremino Spectrometer. Special thanks to www.theremino.com, whose work is published under a "No Copyright" policy. License: GNU GPL v3.
+Developed by radoslawo81 with Claude (AI by Anthropic). Based on jayden-sudo/WebSpectrometer (GNU GPL v3) and Theremino Spectrometer V5.0 by Theremino System (published under a "No Copyright" policy). Not affiliated with either. License: GNU GPL v3.

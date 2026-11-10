@@ -1,7 +1,7 @@
 {
-  "name": "Spectrometer",
-  "short_name": "Spectrometer",
-  "description": "Free, open-source DIY spectrometer software that runs in the browser",
+  "name": "WebSpectrometer2.0",
+  "short_name": "Spectrometer2.0",
+  "description": "Free, open-source software for DIY and webcam spectrometers that runs in the browser",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#f0f8ff",
