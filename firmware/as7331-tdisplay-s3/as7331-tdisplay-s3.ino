@@ -65,6 +65,8 @@ SfeAS7331ArdI2C uv;
 uint8_t sensorAddr = 0;
 int sdaPin = -1, sclPin = -1;
 bool sensorOk = false;
+uint8_t probedAddr = 0;      // an I2C device answered at 0x74-0x77 (even if the init failed)
+const char *initError = "";  // which init step failed (shown on the screen and over USB)
 
 int gainIdx = 4;  // 16×
 int timeIdx = 6;  // 64 ms
@@ -152,24 +154,46 @@ void printInfo() {
                 GAIN_VALUES[gainIdx], TIME_VALUES[timeIdx], (unsigned long)periodMs, autoGain ? 1 : 0);
 }
 
+// Gain and conversion time can only be written in configuration mode: switch to it, write the
+// registers, then return to one-shot measurement mode (CMD)
 bool applySettings() {
-  bool ok = uv.setGain(GAINS[gainIdx]) == ksfTkErrOk;
-  ok = (uv.setConversionTime(TIMES[timeIdx]) == ksfTkErrOk) && ok;
-  return ok;
+  if (uv.setOperationMode(DEVICE_MODE_CFG) != ksfTkErrOk) {
+    initError = "config mode";
+    return false;
+  }
+  if (uv.setGain(GAINS[gainIdx]) != ksfTkErrOk) {
+    initError = "set gain";
+    return false;
+  }
+  if (uv.setConversionTime(TIMES[timeIdx]) != ksfTkErrOk) {
+    initError = "set conversion time";
+    return false;
+  }
+  if (!uv.prepareMeasurement(MEAS_MODE_CMD)) {
+    initError = "measurement mode";
+    return false;
+  }
+  return true;
 }
 
 // Find the sensor on either I2C pin pair and any of its four addresses
 bool findSensor() {
+  probedAddr = 0;
+  initError = "no I2C device at 0x74-0x77";
   for (auto &p : I2C_PINS) {
-    Wire.begin(p[0], p[1], 400000);
+    Wire.begin(p[0], p[1], 100000);
     for (uint8_t a = 0x74; a <= 0x77; a++) {
       Wire.beginTransmission(a);
-      if (Wire.endTransmission() == 0 && uv.begin(a, Wire)) {
+      if (Wire.endTransmission() != 0) continue;
+      probedAddr = a;
+      sdaPin = p[0];
+      sclPin = p[1];
+      if (uv.begin(a, Wire)) {
         sensorAddr = a;
-        sdaPin = p[0];
-        sclPin = p[1];
         return true;
       }
+      initError = "device answers but is not an AS7331 (ID)";
+      Serial.printf("#ERR I2C device at 0x%02X (SDA %d / SCL %d), AS7331 ID 0x%02X not accepted\n", a, p[0], p[1], uv.getDeviceID());
     }
     Wire.end();
   }
@@ -178,8 +202,12 @@ bool findSensor() {
 
 bool initSensor() {
   if (!findSensor()) return false;
-  if (!uv.prepareMeasurement(MEAS_MODE_CMD)) return false;
-  return applySettings();
+  if (!applySettings()) {
+    Serial.printf("#ERR AS7331 at 0x%02X: init failed (%s)\n", sensorAddr, initError);
+    return false;
+  }
+  initError = "";
+  return true;
 }
 
 // One measurement in command (one-shot) mode
@@ -317,10 +345,14 @@ void drawScreen() {
   if (!sensorOk) {
     canvas.setTextDatum(textdatum_t::middle_center);
     canvas.setTextColor(0xF800, COL_BG);
-    canvas.drawString("AS7331 not found", 160, 70);
+    char l1[48];
+    if (probedAddr) snprintf(l1, sizeof l1, "0x%02X (SDA %d/SCL %d): init failed", probedAddr, sdaPin, sclPin);
+    else snprintf(l1, sizeof l1, "AS7331 not found");
+    canvas.drawString(l1, 160, 60);
     canvas.setTextColor(COL_MUTED, COL_BG);
-    canvas.drawString("Qwiic: SDA 43 / SCL 44", 160, 95);
-    canvas.drawString("header: SDA 18 / SCL 17", 160, 115);
+    canvas.drawString(initError, 160, 82);
+    canvas.drawString("Qwiic: SDA 43 / SCL 44", 160, 110);
+    canvas.drawString("header: SDA 18 / SCL 17", 160, 130);
     canvas.pushSprite(0, 0);
     return;
   }
@@ -385,9 +417,10 @@ void setup() {
   canvasOk = canvas.createSprite(320, 170) != nullptr;
 #endif
 
+  delay(50); // sensor power-up
   sensorOk = initSensor();
   if (sensorOk) printInfo();
-  else Serial.println("#ERR AS7331 not found (Qwiic SDA43/SCL44 or header SDA18/SCL17, address 0x74-0x77)");
+  else if (!probedAddr) Serial.println("#ERR AS7331 not found (Qwiic SDA43/SCL44 or header SDA18/SCL17, address 0x74-0x77)");
 #if USE_DISPLAY
   drawScreen();
 #endif
