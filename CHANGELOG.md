@@ -2,6 +2,12 @@
 
 All notable changes of WebSpectrometer2.0. Versions before 2.0.0 were published as the fork `radoslawo81/WebSpectrometer`.
 
+## 2.1.0 – 2026-11-14
+
+- **UV sensor (AS7331)** window (*Tools → UV sensor (AS7331)…*): Web Serial connection, live UVA / UVB / UVC in µW/cm² with automatic units, min / mean / max since reset, trend per channel, gain / conversion time / period control, CSV log, comparison with the spectrometer's UV-A share; the connection keeps logging when the window is closed
+- The last UV sensor reading is written to saved spectrum files (`UVSensor` header line) and to the HTML report
+- **Firmware** for the LILYGO T-Display-S3 + AS7331 (`firmware/as7331-tdisplay-s3`): automatic I2C pin and address detection, automatic gain, on-screen readout, simple text protocol
+
 ## 2.0.0 – 2026-11-10
 
 Standalone project **WebSpectrometer2.0**, detached from the fork network of jayden-sudo/WebSpectrometer.

@@ -35,6 +35,11 @@ No installation: open it in a Chromium-based browser (Chrome, Edge, Opera, Brave
 - CCT and CRI are reported only for white light (|Duv| ≤ 0.05) – coloured, UV and grow lights show “—” instead of meaningless values
 - **UV-A share** (340–400 nm)
 
+**UV sensor (AS7331)**
+- Live UVA / UVB / UVC irradiance in µW/cm² from an AS7331 over Web Serial – covers the UVC and UVB the camera spectrometer cannot see
+- Automatic gain, min / mean / max, trend, CSV log; the reading is stored with saved spectra and in the report
+- Ready firmware for the LILYGO T-Display-S3 with on-screen readout: [firmware/as7331-tdisplay-s3](firmware/as7331-tdisplay-s3/)
+
 **Samples**
 - **Transmission** of glasses, filters and windows: τv, sunglass category, UV / HEV / IR blocking, colour rendering through the lens
 - **Absorbance** (cuvette): A(λ), λmax, concentration from Beer–Lambert or a calibration line

@@ -15,6 +15,7 @@ import { identifyPeaks } from '../core/lineIdent'
 import { parseSets } from './LinesWindow'
 import { downloadText } from '../core/files'
 import { useWindowPos } from './useWindowPos'
+import { formatIrradiance, recentUv } from '../app/uvStore'
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] as string)
 
@@ -94,6 +95,23 @@ export function ReportWindow({ onClose }: { onClose: () => void }) {
           .join('')
         rows.push(`<h2>${esc(t('Tr_Title'))}</h2><table class="grid">${head}${body}</table>`)
       }
+    }
+
+    // AS7331 UV sensor (when connected and reading)
+    const uv = recentUv()
+    if (uv) {
+      const f = (x: number) => {
+        const r = formatIrradiance(x)
+        return `${r.value} ${r.unit}`
+      }
+      rows.push(
+        `<h2>${esc(t('Uv_Title'))}</h2><table>${[
+          kv('UVA (315–400 nm)', f(uv.uva)),
+          kv('UVB (280–315 nm)', f(uv.uvb)),
+          kv('UVC (200–280 nm)', f(uv.uvc)),
+          kv(t('Uv_Gain'), `${uv.gain}× · ${uv.convMs} ms${uv.flag === 'S' ? ` · ${t('Uv_Saturated')}` : ''}`),
+        ].join('')}</table>`,
+      )
     }
 
     if (inc.lines) {

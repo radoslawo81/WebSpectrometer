@@ -83,6 +83,7 @@ export function MenuBar({ onAbout }: { onAbout: () => void }) {
           {item(t('Menu_Log'), () => setSettings({ LogVisible: true }), settings.LogVisible)}
           {item(t('Menu_Abs'), () => setSettings({ AbsVisible: true }), settings.AbsVisible)}
           {item(t('Menu_Hdr'), () => setSettings({ HdrVisible: true }), settings.HdrVisible)}
+          {item(t('Menu_UvSensor'), () => setSettings({ UvVisible: true }), settings.UvVisible)}
           <div className="menu-separator" />
           {sub(
             t('Menu_Tools_SensorType'),

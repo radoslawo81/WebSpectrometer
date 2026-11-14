@@ -35,6 +35,11 @@ Bez instalacji: otwórz w przeglądarce opartej na Chromium (Chrome, Edge, Opera
 - CCT i CRI tylko dla światła białego (|Duv| ≤ 0,05) – dla źródeł kolorowych, UV i lamp do roślin zamiast bezsensownych liczb pojawia się „—”
 - **Udział UV-A** (340–400 nm)
 
+**Czujnik UV (AS7331)**
+- Natężenie UVA / UVB / UVC na żywo w µW/cm² z czujnika AS7331 przez Web Serial – obejmuje UVC i UVB, których spektrometr z kamerą nie widzi
+- Automatyczne wzmocnienie, min / średnia / max, trend, zapis CSV; odczyt trafia do zapisywanych widm i raportu
+- Gotowy firmware na LILYGO T-Display-S3 z odczytem na ekranie: [firmware/as7331-tdisplay-s3](../firmware/as7331-tdisplay-s3/)
+
 **Próbki**
 - **Transmisja** okularów, filtrów i szyb: τv, kategoria okularów, blokowanie UV / HEV / IR, oddawanie barw przez soczewkę
 - **Absorbancja** (kuweta): A(λ), λmax, stężenie z prawa Beera–Lamberta lub krzywej wzorcowej

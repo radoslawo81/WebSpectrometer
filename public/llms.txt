@@ -12,7 +12,7 @@ WebSpectrometer2.0 is a standalone continuation of jayden-sudo/WebSpectrometer (
 - Wavelength calibration: manual multi-point (Trim points) or automatic from reference lamps (fluorescent/CFL, UVC Hg/Ar, neon, sodium, hydrogen, helium, sunlight Fraunhofer lines).
 - Spectral response calibration: incandescent / halogen presets (Planck curve), CIE illuminant A, custom colour temperature, or a tabulated reference spectrum file (e.g. a ground-level solar spectrum, with O2/H2O absorption bands skipped).
 - Light quality: CCT, Duv, x/y, CRI Ra and R1–R14 (R9), luminous efficacy of radiation, illuminance; CCT/CRI only for white light (|Duv| ≤ 0.05).
-- UV: UV-A share (340–400 nm), UVC/UVB/UVA/visible/IR band bar under the graph.
+- UV: UV-A share (340–400 nm), UVC/UVB/UVA/visible/IR band bar under the graph; AS7331 UV sensor (UVA/UVB/UVC in µW/cm²) over Web Serial, with firmware for the LILYGO T-Display-S3.
 - Spectral line identification (Hg, Ar, Ne, Na, H, He, CFL phosphors, Fraunhofer); 2nd- and 3rd-order diffraction ghosts flagged instead of misidentified.
 - FWHM, spectrum comparison per band, HDR, time log, saturation warning.
 - Transmission of glasses, filters and windows (τv, sunglass category, UV/HEV/IR blocking); absorbance with Beer–Lambert.

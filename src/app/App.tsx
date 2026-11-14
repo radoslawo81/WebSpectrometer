@@ -14,6 +14,7 @@ import { LinesWindow } from '../panels/LinesWindow'
 import { LogWindow } from '../panels/LogWindow'
 import { AbsorbanceWindow } from '../panels/AbsorbanceWindow'
 import { HdrWindow } from '../panels/HdrWindow'
+import { UvSensorWindow } from '../panels/UvSensorWindow'
 import { ReportWindow } from '../panels/ReportWindow'
 import { FiltersPanel } from '../panels/FiltersPanel'
 import { LightPanel } from '../panels/LightPanel'
@@ -148,6 +149,7 @@ export function App() {
       {settings.LogVisible && <LogWindow onClose={() => setSettings({ LogVisible: false })} />}
       {settings.AbsVisible && <AbsorbanceWindow onClose={() => setSettings({ AbsVisible: false })} />}
       {settings.HdrVisible && <HdrWindow onClose={() => setSettings({ HdrVisible: false })} />}
+      {settings.UvVisible && <UvSensorWindow onClose={() => setSettings({ UvVisible: false })} />}
       {settings.ReportVisible && <ReportWindow onClose={() => setSettings({ ReportVisible: false })} />}
       <CalibrationHint onCalibrate={() => applyTrimPreset(1000, 2000, 436, 546)} />
     </div>
