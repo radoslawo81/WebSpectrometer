@@ -2,6 +2,11 @@
 
 All notable changes of WebSpectrometer2.0. Versions before 2.0.0 were published as the fork `radoslawo81/WebSpectrometer`.
 
+## 2.4.0 – 2026-11-14
+
+- **Live sensor overlay on the main graph**: the current AS7331 UV bands and AS7265x channels drawn as translucent bars over their pass bands, together with the live camera spectrum; scale fitted to the camera curve (least squares) or to the graph maximum
+- Sensors window wider, bar chart with one equal-width bar per channel, datasheet peak wavelength and channel letter (A…L) under every bar, value above every bar, value grid
+
 ## 2.3.0 – 2026-11-14
 
 - **One Sensors window** (*Tools → Sensors (AS7331 UV + AS7265x)…*) replaces the separate UV and triad windows: combined bar chart 240–960 nm (UVA / UVB / UVC bands next to the 18 triad channels), optional per-nm scale so the wide UV bands and the 20 nm triad channels compare, UV values with min / mean / max and trend, controls of both sensors, both CSV logs

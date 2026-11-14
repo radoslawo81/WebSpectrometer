@@ -53,6 +53,10 @@ export function useUv(): UvState {
   )
 }
 export const getUvState = (): UvState => state
+export function subscribeUv(l: () => void): () => void {
+  listeners.add(l)
+  return () => listeners.delete(l)
+}
 
 function onLine(l: UvLine) {
   if (!l) return

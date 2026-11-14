@@ -7,7 +7,6 @@ import { useT } from '../i18n'
 import { downloadText } from '../core/files'
 import { wavelengthToCss } from '../core/wavelengthColor'
 import { loadDataIntoPipeline } from '../app/engine'
-import { setRuntime } from '../app/store'
 import { calibrateResponseFromCurrent, currentLight } from '../app/lightStore'
 import {
   formatIrradiance,
@@ -22,16 +21,10 @@ import {
   uvSend,
   uvStats,
 } from '../app/uvStore'
-import type { TriadReading, UvReading } from '../serial/uvSensor'
+import type { UvReading } from '../serial/uvSensor'
+import { barDensity, triadBarsOf, uvBarsOf, UV_CH, type SensorBar } from '../core/sensorBands'
+import { setRuntime, setSettings, useAppState } from '../app/store'
 import { useWindowPos } from './useWindowPos'
-
-// AS7331 channels: approximate sensitivity bands (datasheet peaks 360 / 300 / 260 nm)
-const UV_CH = [
-  { key: 'uva', label: 'UVA', lo: 320, hi: 400, c: 360, color: '#7e4cc2' },
-  { key: 'uvb', label: 'UVB', lo: 280, hi: 320, c: 300, color: '#5a2d8a' },
-  { key: 'uvc', label: 'UVC', lo: 240, hi: 280, c: 260, color: '#3b1f5c' },
-] as const
-const TRIAD_FWHM = 20 // nm, AS7265x channel width
 
 const UV_GAINS = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048]
 const UV_CONV = [1, 2, 4, 8, 16, 32, 64]
@@ -42,90 +35,72 @@ const TRI_CYCLES = [10, 18, 36, 50, 100, 180, 255] // × 2.8 ms
 const AVG_N = 10
 
 const uvVal = (r: UvReading, c: number) => (c === 0 ? r.uva : c === 1 ? r.uvb : r.uvc)
+// UV rows in the window: UVA, UVB, UVC (top to bottom)
+const UV_ROWS = [UV_CH[2], UV_CH[1], UV_CH[0]]
 
-/** One bar of the combined chart: wavelength band, value in µW/cm² (band total) */
-interface Bar {
-  lo: number
-  hi: number
-  c: number
-  v: number
-  color: string
-  label: string
-}
+const barValue = (b: SensorBar, density: boolean) => (density ? barDensity(b) : b.v)
 
-function uvBars(r: UvReading | null): Bar[] {
-  if (!r) return []
-  return UV_CH.map((ch, i) => ({ lo: ch.lo, hi: ch.hi, c: ch.c, v: uvVal(r, i), color: ch.color, label: ch.label }))
-}
-
-function triadBars(r: TriadReading | null): Bar[] {
-  if (!r) return []
-  return r.values.map((v, i) => ({
-    lo: r.nm[i] - TRIAD_FWHM / 2,
-    hi: r.nm[i] + TRIAD_FWHM / 2,
-    c: r.nm[i],
-    v,
-    color: wavelengthToCss(Math.min(r.nm[i], 780)),
-    label: `${r.nm[i]} nm`,
-  }))
-}
-
-/** Bar height: band total, or spectral density (total / band width) so wide and narrow channels compare */
-const barValue = (b: Bar, density: boolean) => (density ? b.v / (b.hi - b.lo) : b.v)
-
-function Chart({ bars, log, density }: { bars: Bar[]; log: boolean; density: boolean }) {
-  const W = 480
-  const H = 180
-  const L = 38
-  const B = 22
-  const nmLo = bars.some((b) => b.c < 400) ? 230 : 390
-  const nmHi = 960
-  const x = (nm: number) => L + ((nm - nmLo) / (nmHi - nmLo)) * (W - L - 6)
+// Bar chart, one equal-width slot per channel, peak wavelength (datasheet) under every bar
+function Chart({ bars, log, density }: { bars: SensorBar[]; log: boolean; density: boolean }) {
+  const W = 760
+  const H = 230
+  const L = 44
+  const T = 22 // room for the value labels
+  const B = 34 // two label lines under the bars
+  const slot = (W - L - 6) / bars.length
   const vals = bars.map((b) => barValue(b, density))
   const vmax = Math.max(...vals, 1e-6)
   const vminLog = Math.max(vmax / 1e4, 1e-4)
   const y = (v: number) => {
     const f = log ? (Math.log10(Math.max(v, vminLog)) - Math.log10(vminLog)) / (Math.log10(vmax) - Math.log10(vminLog) || 1) : v / vmax
-    return H - B - Math.max(0, Math.min(1, f)) * (H - B - 8)
+    return H - B - Math.max(0, Math.min(1, f)) * (H - B - T)
   }
-  const unit = formatIrradiance(vmax)
-  const ticks = [300, 400, 500, 600, 700, 800, 900].filter((nm) => nm > nmLo)
+  const milli = vmax >= 1000
+  const unit = `${milli ? 'mW' : 'µW'}/cm²${density ? '/nm' : ''}`
+  const num = (v: number) => {
+    const x = milli ? v / 1000 : v
+    return x >= 100 ? x.toFixed(0) : x >= 10 ? x.toFixed(1) : x >= 1 ? x.toFixed(2) : x.toFixed(3)
+  }
+  const grid = log ? [1, 0.1, 0.01, 0.001] : [1, 0.75, 0.5, 0.25]
   return (
     <svg width={W} height={H} aria-label="sensor channels" style={{ background: '#fff', border: '1px solid var(--border, #ddd)', borderRadius: 6 }}>
-      {ticks.map((nm) => (
-        <g key={nm}>
-          <line x1={x(nm)} x2={x(nm)} y1={8} y2={H - B} stroke="#e8e8e8" />
-          <text x={x(nm)} y={H - 7} fontSize={10} textAnchor="middle" fill="#666">
-            {nm}
-          </text>
-        </g>
-      ))}
+      {grid.map((g) => {
+        const v = vmax * g
+        if (log && v < vminLog) return null
+        const yy = y(v)
+        return (
+          <g key={g}>
+            <line x1={L} x2={W - 6} y1={yy} y2={yy} stroke="#eee" />
+            <text x={L - 4} y={yy + 3} fontSize={9} textAnchor="end" fill="#888">
+              {num(v)}
+            </text>
+          </g>
+        )
+      })}
+      <text x={4} y={12} fontSize={9} fill="#666">
+        {unit}
+      </text>
       <line x1={L} x2={W - 6} y1={H - B} y2={H - B} stroke="#999" />
-      <text x={4} y={14} fontSize={10} fill="#666">
-        {unit.value}
-      </text>
-      <text x={4} y={26} fontSize={9} fill="#999">
-        {unit.unit}
-        {density ? '/nm' : ''}
-      </text>
       {bars.map((b, i) => {
         const v = vals[i]
         const top = y(v)
-        const uv = b.c < 400
-        // UV bands drawn over their full (wide) band, triad channels as 10 nm bars
-        const x0 = uv ? x(b.lo) + 1 : x(b.c - 5)
-        const x1 = uv ? x(b.hi) - 1 : x(b.c + 5)
+        const x0 = L + i * slot
+        const cx = x0 + slot / 2
         const f = formatIrradiance(b.v)
         return (
           <g key={b.label}>
-            <rect x={x0} y={top} width={Math.max(1, x1 - x0)} height={H - B - top} fill={b.color} opacity={uv ? 0.8 : b.c > 700 ? 0.75 : 1}>
-              <title>{`${b.label}: ${f.value} ${f.unit}`}</title>
+            <rect x={x0 + slot * 0.14} y={top} width={slot * 0.72} height={H - B - top} fill={b.color} opacity={!b.uv && b.c > 700 ? 0.75 : 1}>
+              <title>{`${b.uv ? `${b.label} (${b.lo}–${b.hi} nm)` : `${b.sub}: ${b.c} nm`} – ${f.value} ${f.unit}`}</title>
             </rect>
-            {uv && (
-              <text x={(x0 + x1) / 2} y={Math.max(18, top - 3)} fontSize={9} textAnchor="middle" fill={b.color}>
-                {b.label}
-              </text>
-            )}
+            <text x={cx} y={top - 4} fontSize={9} textAnchor="middle" fill="#444">
+              {num(v)}
+            </text>
+            <text x={cx} y={H - B + 13} fontSize={10} fontWeight={600} textAnchor="middle" fill={b.uv ? b.color : '#333'}>
+              {b.label}
+            </text>
+            <text x={cx} y={H - B + 26} fontSize={9} textAnchor="middle" fill="#888">
+              {b.uv ? `${b.c} nm` : b.sub}
+            </text>
           </g>
         )
       })}
@@ -183,6 +158,7 @@ export function SensorsWindow({ onClose }: { onClose: () => void }) {
   const t = useT()
   const [pos, onMove] = useWindowPos('sensors', { x: 440, y: 120 })
   const uv = useUv()
+  const { settings } = useAppState()
   const [log, setLog] = useState(false)
   const [density, setDensity] = useState(true)
   const [showTable, setShowTable] = useState(false)
@@ -198,7 +174,7 @@ export function SensorsWindow({ onClose }: { onClose: () => void }) {
   const uvStale = ru ? Date.now() - ru.t > 5000 : false
   const hasUv = !!uv.info && !!ru
   const hasTri = !!uv.triadInfo && !!rt
-  const bars = [...(hasUv ? uvBars(ru) : []), ...(hasTri ? triadBars(rt) : [])]
+  const bars = [...(hasUv ? uvBarsOf(ru) : []), ...(hasTri ? triadBarsOf(rt) : [])]
   const triAvg = triadAverage(triRows, AVG_N)
   const uvAvg = meanUv(uvRows, AVG_N)
   const L = currentLight()
@@ -215,8 +191,8 @@ export function SensorsWindow({ onClose }: { onClose: () => void }) {
 
   const showInGraph = () => {
     const pts: { nm: number; v: number }[] = []
-    if (withUv && hasUv && uvAvg) uvBars(uvAvg).forEach((b) => pts.push({ nm: b.c, v: barValue(b, true) }))
-    if (hasTri && triAvg) triadBars(triAvg).forEach((b) => pts.push({ nm: b.c, v: barValue(b, true) }))
+    if (withUv && hasUv && uvAvg) uvBarsOf(uvAvg).forEach((b) => pts.push({ nm: b.c, v: barDensity(b) }))
+    if (hasTri && triAvg) triadBarsOf(triAvg).forEach((b) => pts.push({ nm: b.c, v: barDensity(b) }))
     if (pts.length < 2) return
     const g = toGrid(pts)
     loadDataIntoPipeline(g.nms, g.vals)
@@ -244,7 +220,7 @@ export function SensorsWindow({ onClose }: { onClose: () => void }) {
   const box: CSSProperties = { border: '1px solid var(--border, #ddd)', borderRadius: 6, padding: 6, display: 'flex', flexDirection: 'column', gap: 4 }
 
   return (
-    <FloatingWindow title={t('Sen_Title')} x={pos.x} y={pos.y} width={500} onMove={onMove} onClose={onClose} className="compare-window">
+    <FloatingWindow title={t('Sen_Title')} x={pos.x} y={pos.y} width={790} onMove={onMove} onClose={onClose} className="compare-window">
       <div style={{ padding: 8, display: 'flex', flexDirection: 'column', gap: 6, fontSize: 12 }}>
         <div className="field-row" style={{ gap: 6, flexWrap: 'wrap' }}>
           {uv.connected ? (
@@ -292,13 +268,26 @@ export function SensorsWindow({ onClose }: { onClose: () => void }) {
           <label style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
             <input type="checkbox" checked={showTable} onChange={(e) => setShowTable(e.target.checked)} /> {t('Tri_Table')}
           </label>
+          <div style={{ flex: 1 }} />
+          <label style={{ display: 'flex', alignItems: 'center', gap: 3 }} title={t('Sen_OverlayTip')}>
+            <input type="checkbox" checked={settings.SensorOverlay} onChange={(e) => setSettings({ SensorOverlay: e.target.checked })} /> {t('Sen_Overlay')}
+          </label>
+          <select
+            disabled={!settings.SensorOverlay}
+            value={settings.SensorOverlayFit ? 'fit' : 'max'}
+            onChange={(e) => setSettings({ SensorOverlayFit: e.target.value === 'fit' })}
+            title={t('Sen_OverlayTip')}
+          >
+            <option value="fit">{t('Sen_FitCam')}</option>
+            <option value="max">{t('Sen_FitMax')}</option>
+          </select>
         </div>
 
         {/* ---- AS7331 UV ---- */}
         {uv.info && (
           <div style={{ ...box, opacity: uvStale ? 0.5 : 1 }}>
             <div style={{ fontWeight: 600 }}>{t('Uv_Title')}</div>
-            {UV_CH.map((ch, c) => {
+            {UV_ROWS.map((ch, c) => {
               const f = ru ? formatIrradiance(uvVal(ru, c)) : null
               return (
                 <div key={ch.key} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -403,12 +392,12 @@ export function SensorsWindow({ onClose }: { onClose: () => void }) {
         )}
 
         {showTable && bars.length > 0 && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1px 10px', fontSize: 11, fontVariantNumeric: 'tabular-nums' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1px 10px', fontSize: 11, fontVariantNumeric: 'tabular-nums' }}>
             {bars.map((b) => {
               const f = formatIrradiance(b.v)
               return (
                 <div key={b.label} style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: b.c < 400 ? b.color : wavelengthToCss(Math.min(b.c, 780)), fontWeight: 600 }}>{b.label}</span>
+                  <span style={{ color: b.uv ? b.color : wavelengthToCss(Math.min(b.c, 780)), fontWeight: 600 }}>{b.uv ? b.label : `${b.sub} ${b.c} nm`}</span>
                   <span>
                     {f.value} {f.unit}
                   </span>

@@ -48,6 +48,8 @@ export interface Settings {
   AbsVisible: boolean
   HdrVisible: boolean
   SensorsVisible: boolean // Web-only: sensor board window (AS7331 UV + AS7265x triad)
+  SensorOverlay: boolean // Web-only: live sensor channels drawn over the main graph
+  SensorOverlayFit: boolean // Web-only: scale the overlay to the camera spectrum (else to the graph maximum)
   ReportVisible: boolean
   LinesSets: string // Web-only: comma-separated line sets for overlay/identification
   LinesOverlay: boolean
@@ -116,6 +118,8 @@ export const DEFAULT_SETTINGS: Settings = {
   AbsVisible: false,
   HdrVisible: false,
   SensorsVisible: false,
+  SensorOverlay: false,
+  SensorOverlayFit: true,
   ReportVisible: false,
   LinesSets: 'Hg,Ar,CFL',
   LinesOverlay: false,

@@ -14,6 +14,8 @@ import { identifyPeaks, secondOrderStart } from '../core/lineIdent'
 import { ghostLabel, ghostOrders, GHOST_COLOR, parseSets, SET_COLORS } from '../panels/LinesWindow'
 import { SPECTRAL_BANDS } from '../core/bands'
 import { wavelengthToCss } from '../core/wavelengthColor'
+import { recentTriad, recentUv, subscribeUv } from '../app/uvStore'
+import { barDensity, triadBarsOf, uvBarsOf } from '../core/sensorBands'
 import { addPoint, clampBin, clampNm, nmToBin, removePoint } from '../core/calibration'
 
 // Peak label hit region (MouseOnLabels): |mx − x| < 20 and |my − y| < 30 against the peak
@@ -109,11 +111,15 @@ export const SpectrumView = forwardRef<HTMLCanvasElement | null, Props>(function
     }
     redrawRef.current = redraw
     const unsub = subscribeFrame(redraw)
+    const unsubUv = subscribeUv(() => {
+      if (settingsRef.current.SensorOverlay) redraw()
+    })
     const obs = new ResizeObserver(redraw)
     if (canvasRef.current?.parentElement) obs.observe(canvasRef.current.parentElement)
     redraw()
     return () => {
       unsub()
+      unsubUv()
       obs.disconnect()
       cancelAnimationFrame(raf)
     }
@@ -300,6 +306,77 @@ export const SpectrumView = forwardRef<HTMLCanvasElement | null, Props>(function
       }
       ctx.stroke()
       ctx.restore()
+    }
+
+    // Live sensor overlay (web-only): AS7331 UV bands and AS7265x channels as translucent bars over
+    // their pass bands, heights = spectral density × one scale factor (fit to the camera or to the maximum)
+    if (s.SensorOverlay) {
+      const bars = [...uvBarsOf(recentUv(5000)), ...triadBarsOf(recentTriad(5000))].filter((b) => b.hi > nmStart && b.lo < nmEnd)
+      if (bars.length) {
+        const dens = bars.map(barDensity)
+        // Mean camera value over a band (samples of the visible window)
+        const camMean = (lo: number, hi: number) => {
+          if (win.length < 2) return NaN
+          const toIdx = (nm: number) => ((nm - nmStart) / (nmEnd - nmStart)) * (win.length - 1)
+          const a = Math.max(0, Math.ceil(toIdx(lo)))
+          const b = Math.min(win.length - 1, Math.floor(toIdx(hi)))
+          if (b < a) return NaN
+          let sum = 0
+          for (let i = a; i <= b; i++) sum += win.values[i]
+          return sum / (b - a + 1)
+        }
+        let k = 0
+        let fitted = false
+        if (s.SensorOverlayFit) {
+          let num = 0
+          let den = 0
+          bars.forEach((b, i) => {
+            if (b.lo < nmStart || b.hi > nmEnd) return // only bands the camera fully sees
+            const c = camMean(b.lo, b.hi)
+            if (!Number.isFinite(c)) return
+            num += c * dens[i]
+            den += dens[i] * dens[i]
+          })
+          if (den > 0 && num > 0) {
+            k = num / den
+            fitted = true
+          }
+        }
+        const dmax = Math.max(...dens)
+        if (!fitted) k = dmax > 0 ? (0.9 * maxV) / dmax : 0
+        if (k > 0) {
+          ctx.save()
+          ctx.font = '10px Inter, "Segoe UI", system-ui, Arial, sans-serif'
+          ctx.textAlign = 'center'
+          ctx.textBaseline = 'bottom'
+          bars.forEach((b, i) => {
+            const xa = Math.max(DEST_LEFT, nmToX(b.lo))
+            const xb = Math.min(W, nmToX(b.hi))
+            if (xb <= xa) return
+            const y = Math.max(15, vToY(Math.min(dens[i] * k, maxV)))
+            ctx.globalAlpha = 0.28
+            ctx.fillStyle = b.color
+            ctx.fillRect(xa, y, xb - xa, destH - y)
+            ctx.globalAlpha = 0.9
+            ctx.strokeStyle = b.color
+            ctx.lineWidth = 2
+            ctx.beginPath()
+            ctx.moveTo(xa, y)
+            ctx.lineTo(xb, y)
+            ctx.stroke()
+            if (xb - xa > 14) {
+              ctx.fillStyle = b.uv ? b.color : '#555'
+              ctx.fillText(b.label, (xa + xb) / 2, y - 2)
+            }
+          })
+          ctx.globalAlpha = 1
+          ctx.textAlign = 'right'
+          ctx.textBaseline = 'top'
+          ctx.fillStyle = '#555'
+          ctx.fillText(`${tRef.current('Sen_Legend')}: ${fitted ? tRef.current('Sen_FitCam') : tRef.current('Sen_FitMax')}`, W - 8, 18)
+          ctx.restore()
+        }
+      }
     }
 
     // Response correction (web-only): grey out wavelengths outside the calibration's valid range,
