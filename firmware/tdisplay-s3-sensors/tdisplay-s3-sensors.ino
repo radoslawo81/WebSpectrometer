@@ -47,6 +47,7 @@
 #include <SparkFun_AS7265X.h>
 
 #define USE_DISPLAY 1
+#define FW_VERSION "2.5.3"
 
 // ---------------------------------------------------------------------------------------------
 // Board
@@ -461,7 +462,7 @@ void drawHeader(const char *title) {
   canvas.drawString(title, 8, 4);
   canvas.setTextColor(COL_MUTED, COL_BG);
   canvas.setTextDatum(textdatum_t::top_right);
-  canvas.drawString(hold ? "HOLD" : (Serial ? "USB" : ""), 312, 4);
+  canvas.drawString(hold ? "HOLD" : (Serial ? "USB v" FW_VERSION : "v" FW_VERSION), 312, 4);
 }
 
 void drawNoSensor() {
@@ -623,6 +624,7 @@ void drawScreen() {
 // =============================================================================================
 // Commands
 void printInfo() {
+  Serial.println("#WSFW " FW_VERSION);
   uvPrintInfo();
   spPrintInfo();
   if (!uvOk && !spOk) Serial.println("#ERR no sensor found (Qwiic SDA43/SCL44 or header SDA18/SCL17)");
@@ -752,11 +754,37 @@ void initSensors() {
   if (!spOk) spOk = spInit();
 }
 
+// Push buttons (active low) on interrupts: a measurement can block the loop for several hundred ms,
+// and a short press in that time would be missed by polling. The ISR only records the press
+// (one per 250 ms, ignored during the first second after start-up); the loop handles it.
+struct Button {
+  int pin;
+  volatile bool flag = false;
+  volatile uint32_t lastAt = 0;
+  bool pressed() {
+    if (!flag) return false;
+    flag = false;
+    return true;
+  }
+};
+Button btnHold{PIN_BUTTON_HOLD}, btnScreen{PIN_BUTTON_SCREEN};
+
+void IRAM_ATTR buttonIsr(void *arg) {
+  Button *b = (Button *)arg;
+  uint32_t now = millis();
+  if (now > 1000 && now - b->lastAt > 250) {
+    b->lastAt = now;
+    b->flag = true;
+  }
+}
+
 void setup() {
   pinMode(PIN_POWER_ON, OUTPUT);
   digitalWrite(PIN_POWER_ON, HIGH);
   pinMode(PIN_BUTTON_HOLD, INPUT_PULLUP);
   pinMode(PIN_BUTTON_SCREEN, INPUT_PULLUP);
+  attachInterruptArg(digitalPinToInterrupt(PIN_BUTTON_HOLD), buttonIsr, &btnHold, FALLING);
+  attachInterruptArg(digitalPinToInterrupt(PIN_BUTTON_SCREEN), buttonIsr, &btnScreen, FALLING);
 #if ARDUINO_USB_CDC_ON_BOOT
   Serial.setTxBufferSize(2048);
 #endif
@@ -785,25 +813,6 @@ void setup() {
 #endif
 }
 
-// Debounced push button (active low): true once per press, after 40 ms of a stable level.
-// Presses during the first second after start-up are ignored (pins settle, BOOT released).
-struct Button {
-  int pin;
-  bool stable = true, last = true;
-  uint32_t changedAt = 0;
-  bool pressed() {
-    bool v = digitalRead(pin);
-    uint32_t now = millis();
-    if (v != last) {
-      last = v;
-      changedAt = now;
-    }
-    if (now - changedAt < 40 || v == stable) return false;
-    stable = v;
-    return !v && now > 1000;
-  }
-};
-Button btnHold{PIN_BUTTON_HOLD}, btnScreen{PIN_BUTTON_SCREEN};
 
 void loop() {
   static uint32_t lastMeas = 0;

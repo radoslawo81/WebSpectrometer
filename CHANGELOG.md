@@ -2,6 +2,11 @@
 
 All notable changes of WebSpectrometer2.0. Versions before 2.0.0 were published as the fork `radoslawo81/WebSpectrometer`.
 
+## 2.5.3 – 2026-11-14
+
+- Firmware: buttons on interrupts – presses are no longer lost while a measurement blocks the loop (up to ~0.5 s with both sensors)
+- Firmware version shown in the screen header (“USB v2.5.3”) and sent as a `#WSFW` line
+
 ## 2.5.2 – 2026-11-14
 
 - Firmware: combined screen with both sensors (UVA / UVB / UVC values on top, 18 triad bars below), shown first when both are connected; BOOT cycles combined → UV → triad
