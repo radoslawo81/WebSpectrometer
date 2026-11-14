@@ -42,7 +42,9 @@ export interface TriadReading {
   t: number
   deviceMs: number
   nm: number[]
-  values: number[] // µW/cm² per channel (factory calibration)
+  values: number[] // µW/cm² per channel (factory calibration × the user's channel correction, if any)
+  factory?: number[] // the factory-calibrated values before the user's correction
+  corrected?: boolean
   tempC: number | null
   gain: number
   intMs: number
@@ -58,6 +60,7 @@ export interface TriadInfo {
   auto: boolean | null
   led: [boolean, boolean, boolean] // white, IR, UV
   nm: number[]
+  fixed: number | null // values the firmware rebuilt from raw counts (invalid calibrated reads)
 }
 
 export type UvLine =
@@ -142,6 +145,7 @@ export function parseUvLine(raw: string, now = Date.now()): UvLine {
         auto: kv.auto == null ? null : kv.auto === '1',
         led: [led[0] === '1', led[1] === '1', led[2] === '1'],
         nm: nm.length === TRIAD_NM.length ? nm : TRIAD_NM.slice(),
+        fixed: num(kv.fixed),
       },
     }
   }

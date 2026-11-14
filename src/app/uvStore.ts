@@ -2,6 +2,8 @@
 // AS7265x spectral triad windows. The connection and the reading logs live outside the windows,
 // so closing a window keeps the board connected and logging.
 import { useSyncExternalStore } from 'react'
+import { getState } from './store'
+import { applyTriadCorr, parseTriadCorr } from '../core/triadCorr'
 import { UvSerial, type TriadInfo, type TriadReading, type UvInfo, type UvLine, type UvReading } from '../serial/uvSensor'
 
 export interface UvState {
@@ -66,8 +68,10 @@ function onLine(l: UvLine) {
     set({ last: l.reading, rows })
   } else if (l.kind === 'triad') {
     const rows = state.triadRows.length >= MAX_TRIAD_ROWS ? state.triadRows.slice(-MAX_TRIAD_ROWS + 1) : state.triadRows.slice()
-    rows.push(l.reading)
-    set({ triadLast: l.reading, triadRows: rows })
+    const c = parseTriadCorr(getState().settings.TriadCorr)
+    const r = { ...l.reading, factory: l.reading.values, values: applyTriadCorr(l.reading.values, c), corrected: !!c }
+    rows.push(r)
+    set({ triadLast: r, triadRows: rows })
   } else if (l.kind === 'triadInfo') set({ triadInfo: l.info })
   else if (l.kind === 'info') set({ info: l.info })
   else if (l.kind === 'ok') set({ message: l.text, messageIsError: false })
@@ -126,7 +130,8 @@ export function triadAverage(rows: TriadReading[], n: number): TriadReading | nu
   if (!sel.length) return null
   const last = sel[sel.length - 1]
   const values = last.values.map((_, i) => sel.reduce((a, r) => a + r.values[i], 0) / sel.length)
-  return { ...last, values, flag: sel.some((r) => r.flag === 'S') ? 'S' : last.flag }
+  const factory = last.values.map((_, i) => sel.reduce((a, r) => a + (r.factory ?? r.values)[i], 0) / sel.length)
+  return { ...last, values, factory, flag: sel.some((r) => r.flag === 'S') ? 'S' : last.flag }
 }
 
 export function triadRowsToCsv(rows: TriadReading[]): string {

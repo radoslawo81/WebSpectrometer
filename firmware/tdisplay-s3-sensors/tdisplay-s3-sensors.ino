@@ -196,6 +196,9 @@ uint16_t spRawMax = 0;
 float spTemp = NAN;
 char spFlag = '-';
 
+float spRatio[18];     // last good calibrated/raw ratio per channel (0 = unknown); reset on gain / time change
+uint32_t spFixed = 0;  // number of values rebuilt from raw counts (reported in the info line)
+
 float spIntMs() { return spCycles * 2.8f; }
 
 void spPrintInfo() {
@@ -203,12 +206,13 @@ void spPrintInfo() {
   Serial.printf("#WSSP 1 AS7265X sda=%d scl=%d gain=%g cycles=%u int=%.0f auto=%d led=%d%d%d nm=", spBus->sda, spBus->scl,
                 SP_GAIN_VALUES[spGainIdx], spCycles, spIntMs(), spAuto ? 1 : 0, spLed[0], spLed[1], spLed[2]);
   for (int i = 0; i < 18; i++) Serial.printf(i ? ",%u" : "%u", SP_NM[i]);
-  Serial.println();
+  Serial.printf(" fixed=%lu\n", (unsigned long)spFixed);
 }
 
 void spApplySettings() {
   triad.setGain(SP_GAINS[spGainIdx]);
   triad.setIntegrationCycles(spCycles);
+  for (auto &r : spRatio) r = 0; // the cal/raw ratio depends on gain and integration time
 }
 
 void spApplyLeds() {
@@ -235,20 +239,77 @@ bool spInit() {
   return false;
 }
 
+// The calibrated values are 4-byte floats read over the AS7265x virtual-register I2C protocol;
+// a disturbed transfer gives garbage (NaN, negative, absurd). Such a value is read again, and if
+// it is still invalid it is rebuilt from the channel's raw counts with the last good cal/raw ratio.
+float spReadCal(int i) {
+  switch (i) {
+    case 0: return triad.getCalibratedA();
+    case 1: return triad.getCalibratedB();
+    case 2: return triad.getCalibratedC();
+    case 3: return triad.getCalibratedD();
+    case 4: return triad.getCalibratedE();
+    case 5: return triad.getCalibratedF();
+    case 6: return triad.getCalibratedG();
+    case 7: return triad.getCalibratedH();
+    case 8: return triad.getCalibratedR();
+    case 9: return triad.getCalibratedI();
+    case 10: return triad.getCalibratedS();
+    case 11: return triad.getCalibratedJ();
+    case 12: return triad.getCalibratedT();
+    case 13: return triad.getCalibratedU();
+    case 14: return triad.getCalibratedV();
+    case 15: return triad.getCalibratedW();
+    case 16: return triad.getCalibratedK();
+    default: return triad.getCalibratedL();
+  }
+}
+
+uint16_t spReadRaw(int i) {
+  switch (i) {
+    case 0: return triad.getA();
+    case 1: return triad.getB();
+    case 2: return triad.getC();
+    case 3: return triad.getD();
+    case 4: return triad.getE();
+    case 5: return triad.getF();
+    case 6: return triad.getG();
+    case 7: return triad.getH();
+    case 8: return triad.getR();
+    case 9: return triad.getI();
+    case 10: return triad.getS();
+    case 11: return triad.getJ();
+    case 12: return triad.getT();
+    case 13: return triad.getU();
+    case 14: return triad.getV();
+    case 15: return triad.getW();
+    case 16: return triad.getK();
+    default: return triad.getL();
+  }
+}
+
+bool spCalValid(float v) { return isfinite(v) && v >= 0.0f && v < 1.0e7f; }
+
 void spMeasure() {
   triad.takeMeasurements(); // one-shot of all 18 channels (waits for the data)
-  const float cal[18] = {triad.getCalibratedA(), triad.getCalibratedB(), triad.getCalibratedC(), triad.getCalibratedD(),
-                         triad.getCalibratedE(), triad.getCalibratedF(), triad.getCalibratedG(), triad.getCalibratedH(),
-                         triad.getCalibratedR(), triad.getCalibratedI(), triad.getCalibratedS(), triad.getCalibratedJ(),
-                         triad.getCalibratedT(), triad.getCalibratedU(), triad.getCalibratedV(), triad.getCalibratedW(),
-                         triad.getCalibratedK(), triad.getCalibratedL()};
-  const uint16_t raw[18] = {triad.getA(), triad.getB(), triad.getC(), triad.getD(), triad.getE(), triad.getF(),
-                            triad.getG(), triad.getH(), triad.getR(), triad.getI(), triad.getS(), triad.getJ(),
-                            triad.getT(), triad.getU(), triad.getV(), triad.getW(), triad.getK(), triad.getL()};
   spRawMax = 0;
   for (int i = 0; i < 18; i++) {
-    spLast[i] = max(0.0f, cal[i]);
-    if (raw[i] > spRawMax) spRawMax = raw[i];
+    uint16_t raw = spReadRaw(i);
+    if (raw > spRawMax) spRawMax = raw;
+    float cal = spReadCal(i);
+    // Invalid, or wildly off the channel's usual cal/raw ratio: read once more
+    bool off = spRatio[i] > 0 && raw > 50 && (cal < 0.2f * spRatio[i] * raw || cal > 5.0f * spRatio[i] * raw);
+    if (!spCalValid(cal) || off) {
+      cal = spReadCal(i);
+      off = spRatio[i] > 0 && raw > 50 && (cal < 0.2f * spRatio[i] * raw || cal > 5.0f * spRatio[i] * raw);
+    }
+    if (spCalValid(cal) && !off) {
+      if (raw > 50) spRatio[i] = spRatio[i] > 0 ? 0.8f * spRatio[i] + 0.2f * cal / raw : cal / raw;
+    } else {
+      cal = spRatio[i] > 0 ? spRatio[i] * raw : 0.0f;
+      spFixed++;
+    }
+    spLast[i] = cal;
   }
   spTemp = triad.getTemperatureAverage();
 }
@@ -275,6 +336,13 @@ void spStep(uint32_t now) {
   snprintf(buf + n, sizeof buf - n, ",%.1f,%g,%.0f,%c\n", isnan(spTemp) ? 0.0f : spTemp, SP_GAIN_VALUES[spGainIdx], spIntMs(), spFlag);
   Serial.print(buf);
   spAutoRange();
+  // Tell the host about repaired reads (at most every 5 s)
+  static uint32_t reportedFixed = 0, reportedAt = 0;
+  if (spFixed != reportedFixed && now - reportedAt > 5000) {
+    reportedFixed = spFixed;
+    reportedAt = now;
+    spPrintInfo();
+  }
 }
 
 // =============================================================================================

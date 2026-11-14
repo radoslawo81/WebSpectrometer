@@ -22,9 +22,10 @@ import {
   uvStats,
 } from '../app/uvStore'
 import type { UvReading } from '../serial/uvSensor'
-import { barDensity, triadBarsOf, uvBarsOf, UV_CH, type SensorBar } from '../core/sensorBands'
+import { barDensity, triadBarsOf, uvBarsOf, UV_CH, TRIAD_LETTERS, type SensorBar } from '../core/sensorBands'
 import { setRuntime, setSettings, useAppState } from '../app/store'
 import { useWindowPos } from './useWindowPos'
+import { computeTriadCorr, parseTriadCorr } from '../core/triadCorr'
 
 const UV_GAINS = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048]
 const UV_CONV = [1, 2, 4, 8, 16, 32, 64]
@@ -164,6 +165,7 @@ export function SensorsWindow({ onClose }: { onClose: () => void }) {
   const [showTable, setShowTable] = useState(false)
   const [withUv, setWithUv] = useState(true)
   const [msg, setMsg] = useState<string | null>(null)
+  const [corrT, setCorrT] = useState('')
   const supported = typeof navigator !== 'undefined' && 'serial' in navigator
 
   const ru = uv.last
@@ -178,6 +180,20 @@ export function SensorsWindow({ onClose }: { onClose: () => void }) {
   const triAvg = triadAverage(triRows, AVG_N)
   const uvAvg = meanUv(uvRows, AVG_N)
   const L = currentLight()
+  const corr = parseTriadCorr(settings.TriadCorr)
+  const camT = L.corrected && L.metrics?.cct ? Math.round(L.metrics.cct) : null
+
+  const calibrateTriad = () => {
+    if (!triAvg?.factory) return
+    if (triAvg.flag === 'S') return setMsg(t('Tri_ErrSaturated'))
+    const T = Number.parseFloat(corrT || String(camT ?? 2700))
+    const c = computeTriadCorr(triAvg.nm, triAvg.factory, T)
+    if (typeof c === 'string') return setMsg(t(c))
+    setSettings({ TriadCorr: JSON.stringify(c) })
+    triadClear() // new readings come corrected; the old ones would mix both
+    const bad = c.bad.map((i) => `${TRIAD_LETTERS[i]} ${triAvg.nm[i]} nm`).join(', ')
+    setMsg(t('Tri_CorrDone').replace('{t}', String(T)) + (bad ? ' ' + t('Tri_CorrBad').replace('{c}', bad) : ''))
+  }
 
   const fmt = (v: number) => {
     const f = formatIrradiance(v)
@@ -355,6 +371,7 @@ export function SensorsWindow({ onClose }: { onClose: () => void }) {
                 {t('Uv_Samples').replace('{n}', String(triRows.length))}
                 {rt.flag === 'S' && <span style={{ color: 'rgb(190,0,0)', fontWeight: 600 }}> · {t('Uv_Saturated')}</span>}
                 {rt.flag === 'L' && <span> · {t('Uv_Low')}</span>}
+                {!!uv.triadInfo.fixed && <span title={t('Tri_FixedTip')}> · {t('Tri_Fixed').replace('{n}', String(uv.triadInfo.fixed))}</span>}
               </div>
             )}
             <div className="field-row" style={{ gap: 6, flexWrap: 'wrap' }}>
@@ -388,6 +405,44 @@ export function SensorsWindow({ onClose }: { onClose: () => void }) {
                 )
               })}
             </div>
+            <div className="field-row" style={{ gap: 6, flexWrap: 'wrap', borderTop: '1px solid var(--border, #eee)', paddingTop: 4 }}>
+              <span title={t('Tri_CorrTip')}>{t('Tri_Corr')}</span>
+              <input
+                type="number"
+                min={1500}
+                max={4000}
+                step={10}
+                style={{ width: 70 }}
+                placeholder={String(camT ?? 2700)}
+                value={corrT}
+                onChange={(e) => setCorrT(e.target.value)}
+                title={t('Tri_CorrTTip')}
+              />
+              <span>K</span>
+              <ToggleButton disabled={!triAvg} onClick={calibrateTriad} title={t('Tri_CorrTip')}>
+                {t('Tri_CorrBtn')}
+              </ToggleButton>
+              {corr && (
+                <ToggleButton
+                  onClick={() => {
+                    setSettings({ TriadCorr: '' })
+                    triadClear()
+                    setMsg(null)
+                  }}
+                >
+                  {t('Tri_CorrOff')}
+                </ToggleButton>
+              )}
+              <span style={{ fontSize: 11, color: corr ? 'rgb(0,110,0)' : 'var(--text-muted)' }}>
+                {corr ? t('Tri_CorrOn').replace('{t}', String(corr.T)).replace('{d}', new Date(corr.date).toLocaleDateString()) : t('Tri_CorrNone')}
+              </span>
+            </div>
+            {corr && showTable && (
+              <div style={{ fontSize: 10, color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums' }}>
+                {t('Tri_CorrFactors')}{' '}
+                {corr.f.map((f, i) => `${TRIAD_LETTERS[i]} ×${f.toFixed(2)}${corr.bad.includes(i) ? '!' : ''}`).join(' · ')}
+              </div>
+            )}
           </div>
         )}
 
