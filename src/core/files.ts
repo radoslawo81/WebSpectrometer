@@ -3,7 +3,7 @@
 import { getState, markCalibrated, setCalibration, setRuntime } from '../app/store'
 import { activeResponse, loadDataIntoPipeline, pipeline, setIrradiance } from '../app/engine'
 import { sensorMetaPairs } from '../app/sensorMeta'
-import { recentUv } from '../app/uvStore'
+import { recentTriad, recentUv } from '../app/uvStore'
 import { parseCalibration, serializeCalibration } from './calibration'
 import { type IrradianceCoeffs } from './pipeline'
 
@@ -71,6 +71,8 @@ export function getSpectrumText(): string {
   // Web-only: AS7331 UV sensor reading at the time of saving (if connected)
   const uv = recentUv()
   if (uv) lines.push(`UVSensor${sep}AS7331 UVA ${uv.uva.toPrecision(5)} UVB ${uv.uvb.toPrecision(5)} UVC ${uv.uvc.toPrecision(5)} uW/cm2`)
+  const tri = recentTriad()
+  if (tri) lines.push(`AS7265x${sep}${tri.nm.map((nm, i) => `${nm}:${tri.values[i].toPrecision(5)}`).join(' ')} uW/cm2`)
   lines.push('-----------------------')
   lines.push(`Nanometers${sep}Intensity`)
   lines.push('-----------------------')

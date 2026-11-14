@@ -1,7 +1,8 @@
-// AS7331 UV sensor state (web-only). The connection and the reading log live outside the window,
-// so closing the window keeps the sensor connected and logging.
+// Sensor board state (web-only): one serial connection shared by the AS7331 UV sensor and the
+// AS7265x spectral triad windows. The connection and the reading logs live outside the windows,
+// so closing a window keeps the board connected and logging.
 import { useSyncExternalStore } from 'react'
-import { UvSerial, type UvInfo, type UvLine, type UvReading } from '../serial/uvSensor'
+import { UvSerial, type TriadInfo, type TriadReading, type UvInfo, type UvLine, type UvReading } from '../serial/uvSensor'
 
 export interface UvState {
   connected: boolean
@@ -12,9 +13,14 @@ export interface UvState {
   message: string | null // last #OK / #ERR text or connection error
   messageIsError: boolean
   resetAt: number // statistics since this time (ms)
+  triadInfo: TriadInfo | null
+  triadLast: TriadReading | null
+  triadRows: TriadReading[]
+  triadResetAt: number
 }
 
 const MAX_ROWS = 50000
+const MAX_TRIAD_ROWS = 20000
 const serial = new UvSerial()
 
 let state: UvState = {
@@ -26,6 +32,10 @@ let state: UvState = {
   message: null,
   messageIsError: false,
   resetAt: Date.now(),
+  triadInfo: null,
+  triadLast: null,
+  triadRows: [],
+  triadResetAt: Date.now(),
 }
 const listeners = new Set<() => void>()
 function set(patch: Partial<UvState>) {
@@ -50,7 +60,12 @@ function onLine(l: UvLine) {
     const rows = state.rows.length >= MAX_ROWS ? state.rows.slice(-MAX_ROWS + 1) : state.rows.slice()
     rows.push(l.reading)
     set({ last: l.reading, rows })
-  } else if (l.kind === 'info') set({ info: l.info })
+  } else if (l.kind === 'triad') {
+    const rows = state.triadRows.length >= MAX_TRIAD_ROWS ? state.triadRows.slice(-MAX_TRIAD_ROWS + 1) : state.triadRows.slice()
+    rows.push(l.reading)
+    set({ triadLast: l.reading, triadRows: rows })
+  } else if (l.kind === 'triadInfo') set({ triadInfo: l.info })
+  else if (l.kind === 'info') set({ info: l.info })
   else if (l.kind === 'ok') set({ message: l.text, messageIsError: false })
   else set({ message: l.text, messageIsError: true })
 }
@@ -90,6 +105,42 @@ export function uvSend(cmd: string): void {
 
 export function uvClear(): void {
   set({ rows: [], resetAt: Date.now() })
+}
+
+export function triadClear(): void {
+  set({ triadRows: [], triadResetAt: Date.now() })
+}
+
+export function recentTriad(maxAgeMs = 10000): TriadReading | null {
+  const r = state.triadLast
+  return state.connected && r && Date.now() - r.t <= maxAgeMs ? r : null
+}
+
+// Mean of the last n triad readings (fewer if not available); null without readings
+export function triadAverage(rows: TriadReading[], n: number): TriadReading | null {
+  const sel = rows.slice(-n)
+  if (!sel.length) return null
+  const last = sel[sel.length - 1]
+  const values = last.values.map((_, i) => sel.reduce((a, r) => a + r.values[i], 0) / sel.length)
+  return { ...last, values, flag: sel.some((r) => r.flag === 'S') ? 'S' : last.flag }
+}
+
+export function triadRowsToCsv(rows: TriadReading[]): string {
+  const nm = rows[0]?.nm ?? []
+  const head = ['Time', 'Elapsed_s', ...nm.map((x) => `${x}nm_uW_cm2`), 'Temp_C', 'Gain', 'Int_ms', 'Flag'].join(';')
+  const t0 = rows.length ? rows[0].t : 0
+  const lines = rows.map((r) =>
+    [
+      new Date(r.t).toISOString(),
+      ((r.t - t0) / 1000).toFixed(2),
+      ...r.values.map((v) => v.toPrecision(6)),
+      r.tempC == null ? '' : r.tempC.toFixed(1),
+      String(r.gain),
+      String(r.intMs),
+      r.flag,
+    ].join(';'),
+  )
+  return [head, ...lines].join('\n') + '\n'
 }
 
 // The last reading, if it is at most maxAgeMs old (for files and reports)

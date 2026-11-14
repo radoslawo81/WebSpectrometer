@@ -84,6 +84,7 @@ export function MenuBar({ onAbout }: { onAbout: () => void }) {
           {item(t('Menu_Abs'), () => setSettings({ AbsVisible: true }), settings.AbsVisible)}
           {item(t('Menu_Hdr'), () => setSettings({ HdrVisible: true }), settings.HdrVisible)}
           {item(t('Menu_UvSensor'), () => setSettings({ UvVisible: true }), settings.UvVisible)}
+          {item(t('Menu_Triad'), () => setSettings({ TriadVisible: true }), settings.TriadVisible)}
           <div className="menu-separator" />
           {sub(
             t('Menu_Tools_SensorType'),

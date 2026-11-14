@@ -15,7 +15,7 @@ import { identifyPeaks } from '../core/lineIdent'
 import { parseSets } from './LinesWindow'
 import { downloadText } from '../core/files'
 import { useWindowPos } from './useWindowPos'
-import { formatIrradiance, recentUv } from '../app/uvStore'
+import { formatIrradiance, recentTriad, recentUv } from '../app/uvStore'
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] as string)
 
@@ -111,6 +111,20 @@ export function ReportWindow({ onClose }: { onClose: () => void }) {
           kv('UVC (200–280 nm)', f(uv.uvc)),
           kv(t('Uv_Gain'), `${uv.gain}× · ${uv.convMs} ms${uv.flag === 'S' ? ` · ${t('Uv_Saturated')}` : ''}`),
         ].join('')}</table>`,
+      )
+    }
+
+    // AS7265x spectral triad (when connected and reading)
+    const tri = recentTriad()
+    if (tri) {
+      const cells = tri.nm
+        .map((nm, i) => {
+          const r = formatIrradiance(tri.values[i])
+          return `<tr><td>${nm} nm</td><td>${r.value} ${r.unit}</td></tr>`
+        })
+        .join('')
+      rows.push(
+        `<h2>${esc(t('Tri_Title'))}</h2><table class="grid"><tr><th>λ</th><th>µW/cm²</th></tr>${cells}</table><p>${esc(t('Uv_Gain'))} ${tri.gain}× · ${tri.intMs.toFixed(0)} ms${tri.flag === 'S' ? ` · ${esc(t('Uv_Saturated'))}` : ''}</p>`,
       )
     }
 

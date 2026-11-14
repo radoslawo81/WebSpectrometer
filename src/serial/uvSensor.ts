@@ -1,11 +1,14 @@
-// AS7331 UV sensor (UVA / UVB / UVC) over Web Serial (web-only).
-// Firmware: firmware/as7331-tdisplay-s3 (ESP32-S3); any device that prints the same text lines works.
+// Sensor board over Web Serial (web-only): AS7331 UV sensor (UVA / UVB / UVC) and AS7265x spectral
+// triad (18 channels, 410–940 nm). Firmware: firmware/tdisplay-s3-sensors (ESP32-S3); any device that
+// prints the same text lines works.
 //
 // Device → host lines:
 //   #WSUV 1 AS7331 addr=0x74 sda=43 scl=44 gain=16 conv=64 period=250 auto=1   info
 //   UV,<ms>,<uva>,<uvb>,<uvc>,<tempC>,<gain>,<convMs>,<flag>                   reading, µW/cm²
+//   #WSSP 1 AS7265X sda=43 scl=44 gain=16 cycles=50 int=140 auto=1 led=000 nm=410,…,940   triad info
+//   SP,<ms>,<v1>,…,<v18>,<tempC>,<gain>,<intMs>,<flag>                                  triad reading, µW/cm²
 //   #OK <text> / #ERR <text>
-// Host → device: A (auto gain), G<n>, T<ms>, P<ms>, H, I — one per line.
+// Host → device: A, G<n>, T<ms> (AS7331) · SA, SG<n>, SN<n>, SL<W|I|U><0|1> (AS7265x) · P<ms>, H, I
 
 export type UvFlag = '-' | 'S' | 'L'
 
@@ -32,9 +35,36 @@ export interface UvInfo {
   auto: boolean | null
 }
 
+// AS7265x channel centres (nm), in the order of the SP line
+export const TRIAD_NM = [410, 435, 460, 485, 510, 535, 560, 585, 610, 645, 680, 705, 730, 760, 810, 860, 900, 940]
+
+export interface TriadReading {
+  t: number
+  deviceMs: number
+  nm: number[]
+  values: number[] // µW/cm² per channel (factory calibration)
+  tempC: number | null
+  gain: number
+  intMs: number
+  flag: UvFlag
+}
+
+export interface TriadInfo {
+  sda: number | null
+  scl: number | null
+  gain: number | null
+  cycles: number | null
+  intMs: number | null
+  auto: boolean | null
+  led: [boolean, boolean, boolean] // white, IR, UV
+  nm: number[]
+}
+
 export type UvLine =
   | { kind: 'reading'; reading: UvReading }
   | { kind: 'info'; info: UvInfo }
+  | { kind: 'triad'; reading: TriadReading }
+  | { kind: 'triadInfo'; info: TriadInfo }
   | { kind: 'ok'; text: string }
   | { kind: 'error'; text: string }
   | null
@@ -68,6 +98,50 @@ export function parseUvLine(raw: string, now = Date.now()): UvLine {
         gain: num(p[6]) ?? 0,
         convMs: num(p[7]) ?? 0,
         flag: f === 'S' || f === 'L' ? f : '-',
+      },
+    }
+  }
+  if (line.startsWith('SP,')) {
+    const p = line.split(',')
+    // SP, ms, 18 values, temp, gain, int, flag
+    if (p.length < 2 + TRIAD_NM.length) return null
+    const values = p.slice(2, 2 + TRIAD_NM.length).map((x) => Number.parseFloat(x))
+    if (values.some((v) => !Number.isFinite(v))) return null
+    const rest = p.slice(2 + TRIAD_NM.length)
+    const f = (rest[3] ?? '-').trim()
+    return {
+      kind: 'triad',
+      reading: {
+        t: now,
+        deviceMs: num(p[1]) ?? 0,
+        nm: TRIAD_NM.slice(),
+        values: values.map((v) => Math.max(0, v)),
+        tempC: num(rest[0]),
+        gain: num(rest[1]) ?? 0,
+        intMs: num(rest[2]) ?? 0,
+        flag: f === 'S' || f === 'L' ? f : '-',
+      },
+    }
+  }
+  if (line.startsWith('#WSSP')) {
+    const kv: Record<string, string> = {}
+    for (const m of line.matchAll(/(\w+)=(\S+)/g)) kv[m[1]] = m[2]
+    const led = (kv.led ?? '000').padEnd(3, '0')
+    const nm = (kv.nm ?? '')
+      .split(',')
+      .map((x) => Number.parseFloat(x))
+      .filter(Number.isFinite)
+    return {
+      kind: 'triadInfo',
+      info: {
+        sda: num(kv.sda),
+        scl: num(kv.scl),
+        gain: num(kv.gain),
+        cycles: num(kv.cycles),
+        intMs: num(kv.int),
+        auto: kv.auto == null ? null : kv.auto === '1',
+        led: [led[0] === '1', led[1] === '1', led[2] === '1'],
+        nm: nm.length === TRIAD_NM.length ? nm : TRIAD_NM.slice(),
       },
     }
   }

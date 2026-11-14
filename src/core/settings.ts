@@ -48,6 +48,7 @@ export interface Settings {
   AbsVisible: boolean
   HdrVisible: boolean
   UvVisible: boolean // Web-only: AS7331 UV sensor window
+  TriadVisible: boolean // Web-only: AS7265x spectral triad window
   ReportVisible: boolean
   LinesSets: string // Web-only: comma-separated line sets for overlay/identification
   LinesOverlay: boolean
@@ -116,6 +117,7 @@ export const DEFAULT_SETTINGS: Settings = {
   AbsVisible: false,
   HdrVisible: false,
   UvVisible: false,
+  TriadVisible: false,
   ReportVisible: false,
   LinesSets: 'Hg,Ar,CFL',
   LinesOverlay: false,

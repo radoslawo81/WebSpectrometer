@@ -2,6 +2,15 @@
 
 All notable changes of WebSpectrometer2.0. Versions before 2.0.0 were published as the fork `radoslawo81/WebSpectrometer`.
 
+## 2.2.0 – 2026-11-14
+
+- **18-channel spectrometer (AS7265x)** window (*Tools → 18-channel spectrometer (AS7265x)…*) for the SparkFun Spectral Triad: bar chart on a wavelength axis (linear / log), table of values, gain / integration time / illumination LED control, CSV log
+- **Show in the main graph**: the averaged 18-channel spectrum, interpolated to 1 nm, can be loaded into the main graph for light-quality analysis
+- **Spectral response calibration with the AS7265x**: the averaged triad reading is used as the reference spectrum for the camera spectrometer (smooth-spectrum sources)
+- One serial connection serves both sensor windows; the AS7265x reading is written to saved spectra (`AS7265x` header line) and to the report
+- **Firmware renamed to `firmware/tdisplay-s3-sensors`** and extended: AS7331 and/or AS7265x on either I2C connector (two buses, `Wire` on the Qwiic connector, `Wire1` on the side header), automatic gain for both, two screens switched with the BOOT button, AS7265x status LED switched off
+- Firmware fix (since 2.1.0): AS7331 gain / conversion time written in configuration mode, init diagnostics on screen and over USB
+
 ## 2.1.0 – 2026-11-14
 
 - **UV sensor (AS7331)** window (*Tools → UV sensor (AS7331)…*): Web Serial connection, live UVA / UVB / UVC in µW/cm² with automatic units, min / mean / max since reset, trend per channel, gain / conversion time / period control, CSV log, comparison with the spectrometer's UV-A share; the connection keeps logging when the window is closed

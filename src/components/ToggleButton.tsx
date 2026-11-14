@@ -8,9 +8,10 @@ interface Props {
   style?: CSSProperties
   title?: string
   activeBackground?: string // Special background color, e.g. while Average is in progress
+  disabled?: boolean
 }
 
-export function ToggleButton({ active, onClick, children, style, title, activeBackground }: Props) {
+export function ToggleButton({ active, onClick, children, style, title, activeBackground, disabled }: Props) {
   return (
     <button
       type="button"
@@ -18,6 +19,7 @@ export function ToggleButton({ active, onClick, children, style, title, activeBa
       style={activeBackground ? { ...style, background: activeBackground } : style}
       onClick={onClick}
       title={title}
+      disabled={disabled}
     >
       {children}
     </button>

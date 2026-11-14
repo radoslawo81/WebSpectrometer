@@ -38,7 +38,12 @@ Bez instalacji: otwórz w przeglądarce opartej na Chromium (Chrome, Edge, Opera
 **Czujnik UV (AS7331)**
 - Natężenie UVA / UVB / UVC na żywo w µW/cm² z czujnika AS7331 przez Web Serial – obejmuje UVC i UVB, których spektrometr z kamerą nie widzi
 - Automatyczne wzmocnienie, min / średnia / max, trend, zapis CSV; odczyt trafia do zapisywanych widm i raportu
-- Gotowy firmware na LILYGO T-Display-S3 z odczytem na ekranie: [firmware/as7331-tdisplay-s3](../firmware/as7331-tdisplay-s3/)
+
+**Spektrometr 18-kanałowy (AS7265x, SparkFun Spectral Triad)**
+- 18 kanałów 410–940 nm w µW/cm² przez to samo połączenie: wykres słupkowy, wartości, automatyczne wzmocnienie, diody oświetlające, zapis CSV
+- Pokazanie odczytu na głównym wykresie albo użycie go jako **wzorca do kalibracji czułości** spektrometru z kamerą (z halogenem, żarówką albo Słońcem)
+
+**Firmware czujników**: gotowy szkic na LILYGO T-Display-S3 z odczytem na ekranie, dla AS7331 i/lub AS7265x na dowolnym złączu I2C: [firmware/tdisplay-s3-sensors](../firmware/tdisplay-s3-sensors/)
 
 **Próbki**
 - **Transmisja** okularów, filtrów i szyb: τv, kategoria okularów, blokowanie UV / HEV / IR, oddawanie barw przez soczewkę
