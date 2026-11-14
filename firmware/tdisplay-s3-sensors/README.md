@@ -9,7 +9,7 @@ One sketch for both sensors, used alone or together:
 | ams OSRAM **AS7331** | UVA / UVB / UVC irradiance, µW/cm² (factory calibration) | 0x74–0x77 |
 | ams OSRAM **AS7265x** (SparkFun Spectral Triad) | 18 channels 410–940 nm, ~20 nm wide, µW/cm² (factory calibration) | 0x49 |
 
-The readings are shown on the T-Display-S3 screen and streamed over USB to **WebSpectrometer2.0**: *Tools → UV sensor (AS7331)…* and *Tools → 18-channel spectrometer (AS7265x)…* (one connection serves both windows).
+The readings are shown on the T-Display-S3 screen and streamed over USB to **WebSpectrometer2.0**: *Tools → Sensors (AS7331 UV + AS7265x)…*.
 
 ## Wiring
 
@@ -63,7 +63,7 @@ Host → device:
 
 ## Polski
 
-Jeden szkic dla obu czujników, używanych osobno albo razem: **AS7331** (UVA / UVB / UVC w µW/cm², adres 0x74–0x77) i **AS7265x** – SparkFun Spectral Triad (18 kanałów 410–940 nm, ~20 nm każdy, µW/cm², adres 0x49). Odczyty widać na ekranie T-Display-S3 i trafiają przez USB do **WebSpectrometer2.0**: *Narzędzia → Czujnik UV (AS7331)…* oraz *Narzędzia → Spektrometr 18-kanałowy (AS7265x)…* (jedno połączenie obsługuje oba okna).
+Jeden szkic dla obu czujników, używanych osobno albo razem: **AS7331** (UVA / UVB / UVC w µW/cm², adres 0x74–0x77) i **AS7265x** – SparkFun Spectral Triad (18 kanałów 410–940 nm, ~20 nm każdy, µW/cm², adres 0x49). Odczyty widać na ekranie T-Display-S3 i trafiają przez USB do **WebSpectrometer2.0**: *Narzędzia → Czujniki (AS7331 UV + AS7265x)…*.
 
 **Podłączenie:** złącze Qwiic przy USB-C (SDA = GPIO43, SCL = GPIO44) albo piny boczne 3V3 / GND / GPIO18 (SDA) / GPIO17 (SCL). Każdy czujnik może być na dowolnym złączu, oba można też połączyć łańcuchowo przez Qwiic. Wszystko wykrywa się samo. Zasilanie czujników **3,3 V**.
 

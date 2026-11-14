@@ -35,13 +35,10 @@ No installation: open it in a Chromium-based browser (Chrome, Edge, Opera, Brave
 - CCT and CRI are reported only for white light (|Duv| ≤ 0.05) – coloured, UV and grow lights show “—” instead of meaningless values
 - **UV-A share** (340–400 nm)
 
-**UV sensor (AS7331)**
-- Live UVA / UVB / UVC irradiance in µW/cm² from an AS7331 over Web Serial – covers the UVC and UVB the camera spectrometer cannot see
-- Automatic gain, min / mean / max, trend, CSV log; the reading is stored with saved spectra and in the report
-
-**18-channel spectrometer (AS7265x, SparkFun Spectral Triad)**
-- 18 channels 410–940 nm in µW/cm² over the same connection: bar chart, values, automatic gain, illumination LEDs, CSV log
-- Show the reading in the main graph, or use it as the **reference for the spectral response calibration** of the camera spectrometer (with a halogen or incandescent lamp, or sunlight)
+**Sensors window (*Tools → Sensors*): AS7331 UV + AS7265x 18-channel (SparkFun Spectral Triad)**
+- One Web Serial connection, one bar chart 240–960 nm: UVA / UVB / UVC from the AS7331 (covers the UVC and UVB the camera spectrometer cannot see) next to the 18 triad channels 410–940 nm, optionally per nm so both compare
+- UV values with min / mean / max and trend; automatic gain, illumination LEDs, CSV logs; readings are stored with saved spectra and in the report
+- Show the combined spectrum (with or without UV) in the main graph, or use the triad reading as the **reference for the spectral response calibration** of the camera spectrometer (with a halogen or incandescent lamp, or sunlight)
 
 **Sensor firmware**: ready sketch for the LILYGO T-Display-S3 with on-screen readout, for the AS7331 and/or the AS7265x on either I2C connector: [firmware/tdisplay-s3-sensors](firmware/tdisplay-s3-sensors/)
 

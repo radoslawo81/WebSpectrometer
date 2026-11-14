@@ -268,9 +268,12 @@ void spAutoRange() {
 void spStep(uint32_t now) {
   spMeasure();
   spFlag = spRawMax > 60000 ? 'S' : (spRawMax < 200 && spGainIdx == 3 ? 'L' : '-');
-  Serial.printf("SP,%lu", (unsigned long)now);
-  for (int i = 0; i < 18; i++) Serial.printf(",%.3f", spLast[i]);
-  Serial.printf(",%.1f,%g,%.0f,%c\n", isnan(spTemp) ? 0.0f : spTemp, SP_GAIN_VALUES[spGainIdx], spIntMs(), spFlag);
+  // Build the whole line first and send it with one write (no half lines on a busy link)
+  char buf[320];
+  int n = snprintf(buf, sizeof buf, "SP,%lu", (unsigned long)now);
+  for (int i = 0; i < 18; i++) n += snprintf(buf + n, sizeof buf - n, ",%.3f", spLast[i]);
+  snprintf(buf + n, sizeof buf - n, ",%.1f,%g,%.0f,%c\n", isnan(spTemp) ? 0.0f : spTemp, SP_GAIN_VALUES[spGainIdx], spIntMs(), spFlag);
+  Serial.print(buf);
   spAutoRange();
 }
 
@@ -615,7 +618,13 @@ void setup() {
   digitalWrite(PIN_POWER_ON, HIGH);
   pinMode(PIN_BUTTON_HOLD, INPUT_PULLUP);
   pinMode(PIN_BUTTON_SCREEN, INPUT_PULLUP);
+#if ARDUINO_USB_CDC_ON_BOOT
+  Serial.setTxBufferSize(2048);
+#endif
   Serial.begin(115200);
+#if ARDUINO_USB_CDC_ON_BOOT
+  Serial.setTxTimeoutMs(20); // never let a host that does not read stall the loop (and the display)
+#endif
 
 #if USE_DISPLAY
   lcd.init();
@@ -636,29 +645,53 @@ void setup() {
 #endif
 }
 
+// Debounced push button (active low): true once per press, after 40 ms of a stable level.
+// Presses during the first second after start-up are ignored (pins settle, BOOT released).
+struct Button {
+  int pin;
+  bool stable = true, last = true;
+  uint32_t changedAt = 0;
+  bool pressed() {
+    bool v = digitalRead(pin);
+    uint32_t now = millis();
+    if (v != last) {
+      last = v;
+      changedAt = now;
+    }
+    if (now - changedAt < 40 || v == stable) return false;
+    stable = v;
+    return !v && now > 1000;
+  }
+};
+Button btnHold{PIN_BUTTON_HOLD}, btnScreen{PIN_BUTTON_SCREEN};
+
 void loop() {
   static uint32_t lastMeas = 0;
   static uint32_t lastRetry = 0;
-  static bool lastHoldBtn = true, lastScreenBtn = true;
+  static uint32_t lastDraw = 0;
 
   readSerial();
 
-  bool hb = digitalRead(PIN_BUTTON_HOLD);
-  if (!hb && lastHoldBtn) {
+  if (btnHold.pressed()) {
     hold = !hold;
 #if USE_DISPLAY
     drawScreen();
 #endif
   }
-  lastHoldBtn = hb;
-  bool sb = digitalRead(PIN_BUTTON_SCREEN);
-  if (!sb && lastScreenBtn) {
+  if (btnScreen.pressed()) {
 #if USE_DISPLAY
     screen = screen ? 0 : 1;
     drawScreen();
 #endif
   }
-  lastScreenBtn = sb;
+
+#if USE_DISPLAY
+  // Refresh the display on its own clock, independent of the measurement and the USB link
+  if (!hold && millis() - lastDraw > 300) {
+    lastDraw = millis();
+    drawScreen();
+  }
+#endif
 
   // Look for missing sensors every 3 s (hot-plug, or after a failed measurement)
   if ((!uvOk || !spOk) && millis() - lastRetry > 3000) {
@@ -681,7 +714,4 @@ void loop() {
   lastMeas = millis();
   if (uvOk) uvStep(lastMeas);
   if (spOk) spStep(lastMeas);
-#if USE_DISPLAY
-  if (!hold) drawScreen();
-#endif
 }

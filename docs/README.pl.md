@@ -35,13 +35,10 @@ Bez instalacji: otwórz w przeglądarce opartej na Chromium (Chrome, Edge, Opera
 - CCT i CRI tylko dla światła białego (|Duv| ≤ 0,05) – dla źródeł kolorowych, UV i lamp do roślin zamiast bezsensownych liczb pojawia się „—”
 - **Udział UV-A** (340–400 nm)
 
-**Czujnik UV (AS7331)**
-- Natężenie UVA / UVB / UVC na żywo w µW/cm² z czujnika AS7331 przez Web Serial – obejmuje UVC i UVB, których spektrometr z kamerą nie widzi
-- Automatyczne wzmocnienie, min / średnia / max, trend, zapis CSV; odczyt trafia do zapisywanych widm i raportu
-
-**Spektrometr 18-kanałowy (AS7265x, SparkFun Spectral Triad)**
-- 18 kanałów 410–940 nm w µW/cm² przez to samo połączenie: wykres słupkowy, wartości, automatyczne wzmocnienie, diody oświetlające, zapis CSV
-- Pokazanie odczytu na głównym wykresie albo użycie go jako **wzorca do kalibracji czułości** spektrometru z kamerą (z halogenem, żarówką albo Słońcem)
+**Okno Czujniki (*Narzędzia → Czujniki*): AS7331 UV + AS7265x 18-kanałowy (SparkFun Spectral Triad)**
+- Jedno połączenie Web Serial, jeden wykres słupkowy 240–960 nm: UVA / UVB / UVC z AS7331 (obejmuje UVC i UVB, których spektrometr z kamerą nie widzi) obok 18 kanałów triady 410–940 nm, opcjonalnie na nm, żeby dało się je porównać
+- Wartości UV z min / średnią / max i trendem; automatyczne wzmocnienie, diody oświetlające, zapis CSV; odczyty trafiają do zapisywanych widm i raportu
+- Pokazanie połączonego widma (z UV albo bez) na głównym wykresie albo użycie odczytu triady jako **wzorca do kalibracji czułości** spektrometru z kamerą (z halogenem, żarówką albo Słońcem)
 
 **Firmware czujników**: gotowy szkic na LILYGO T-Display-S3 z odczytem na ekranie, dla AS7331 i/lub AS7265x na dowolnym złączu I2C: [firmware/tdisplay-s3-sensors](../firmware/tdisplay-s3-sensors/)
 

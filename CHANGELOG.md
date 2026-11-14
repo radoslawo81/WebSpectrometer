@@ -2,6 +2,12 @@
 
 All notable changes of WebSpectrometer2.0. Versions before 2.0.0 were published as the fork `radoslawo81/WebSpectrometer`.
 
+## 2.3.0 – 2026-11-14
+
+- **One Sensors window** (*Tools → Sensors (AS7331 UV + AS7265x)…*) replaces the separate UV and triad windows: combined bar chart 240–960 nm (UVA / UVB / UVC bands next to the 18 triad channels), optional per-nm scale so the wide UV bands and the 20 nm triad channels compare, UV values with min / mean / max and trend, controls of both sensors, both CSV logs
+- **Show in the main graph** can include the three UV bands (AS7331) together with the triad channels
+- Firmware: the display refreshes on its own clock (it no longer depends on the measurement loop or on a host reading the USB port), USB writes cannot block the loop, debounced buttons (no false HOLD at start-up), the triad line is sent in one piece
+
 ## 2.2.0 – 2026-11-14
 
 - **18-channel spectrometer (AS7265x)** window (*Tools → 18-channel spectrometer (AS7265x)…*) for the SparkFun Spectral Triad: bar chart on a wavelength axis (linear / log), table of values, gain / integration time / illumination LED control, CSV log
