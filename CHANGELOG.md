@@ -2,6 +2,11 @@
 
 All notable changes of WebSpectrometer2.0. Versions before 2.0.0 were published as the fork `radoslawo81/WebSpectrometer`.
 
+## 2.5.0 – 2026-11-14
+
+- **AS7265x channel correction** (*Sensors → Calibrate triad with a bulb*): one measurement of a clear incandescent bulb of known colour temperature gives a factor Planck(λ, T) / reading for each of the 18 channels; stored in the browser and applied to all new readings (chart, overlay, main graph, CSV, report). Corrects the factory calibration, which was off by up to 2–3× per channel on the tested board
+- Firmware: invalid calibrated triad values (damaged 4-byte float reads: NaN, negative, absurd) are read again and otherwise rebuilt from the raw counts with the channel's last good ratio, instead of being shown as 0; the number of repaired reads is reported to the app
+
 ## 2.4.0 – 2026-11-14
 
 - **Live sensor overlay on the main graph**: the current AS7331 UV bands and AS7265x channels drawn as translucent bars over their pass bands, together with the live camera spectrum; scale fitted to the camera curve (least squares) or to the graph maximum

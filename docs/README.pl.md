@@ -38,6 +38,7 @@ Bez instalacji: otwórz w przeglądarce opartej na Chromium (Chrome, Edge, Opera
 **Okno Czujniki (*Narzędzia → Czujniki*): AS7331 UV + AS7265x 18-kanałowy (SparkFun Spectral Triad)**
 - Jedno połączenie Web Serial, jeden wykres słupkowy 240–960 nm: UVA / UVB / UVC z AS7331 (obejmuje UVC i UVB, których spektrometr z kamerą nie widzi) obok 18 kanałów triady 410–940 nm, opcjonalnie na nm, żeby dało się je porównać
 - Wartości UV z min / średnią / max i trendem; automatyczne wzmocnienie, diody oświetlające, zapis CSV; odczyty trafiają do zapisywanych widm i raportu
+- **Korekcja kanałów triady** zwykłą żarówką (Planck): usuwa błędy fabrycznej kalibracji poszczególnych kanałów
 - **Nakładka na żywo**: kanały czujników jako słupki na widmie z kamery na głównym wykresie, przeskalowane do krzywej z kamery
 - Pokazanie połączonego widma (z UV albo bez) na głównym wykresie albo użycie odczytu triady jako **wzorca do kalibracji czułości** spektrometru z kamerą (z halogenem, żarówką albo Słońcem)
 

@@ -38,6 +38,7 @@ No installation: open it in a Chromium-based browser (Chrome, Edge, Opera, Brave
 **Sensors window (*Tools → Sensors*): AS7331 UV + AS7265x 18-channel (SparkFun Spectral Triad)**
 - One Web Serial connection, one bar chart 240–960 nm: UVA / UVB / UVC from the AS7331 (covers the UVC and UVB the camera spectrometer cannot see) next to the 18 triad channels 410–940 nm, optionally per nm so both compare
 - UV values with min / mean / max and trend; automatic gain, illumination LEDs, CSV logs; readings are stored with saved spectra and in the report
+- **Triad channel correction** with a clear incandescent bulb (Planck): fixes the per-channel errors of the factory calibration
 - **Live overlay**: the sensor channels as bars over the live camera spectrum in the main graph, scaled to fit the camera curve
 - Show the combined spectrum (with or without UV) in the main graph, or use the triad reading as the **reference for the spectral response calibration** of the camera spectrometer (with a halogen or incandescent lamp, or sunlight)
 
