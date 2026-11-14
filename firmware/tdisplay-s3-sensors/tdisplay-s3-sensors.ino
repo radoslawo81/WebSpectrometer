@@ -136,7 +136,7 @@ bool uvInit() {
   return false;
 }
 
-bool uvMeasure() {
+bool uvMeasureOnce() {
   if (uv.setStartState(true) != ksfTkErrOk) return false;
   delay(2 + uv.getConversionTimeMillis());
   if (uv.readAllUV() != ksfTkErrOk) return false;
@@ -145,6 +145,20 @@ bool uvMeasure() {
   uvLast[2] = uv.getUVC();
   if (uv.readTemp() == ksfTkErrOk) uvTemp = uv.getTemp();
   return true;
+}
+
+// A measurement that never ran reads all zeros with a temperature of −66.9 °C (raw 0). That is what
+// the AS7331 returns after it lost its settings (a supply dip resets it to configuration mode, e.g.
+// when another sensor or LED on the bus switches on). Then the settings are written again.
+bool uvLooksDead() { return uvLast[0] == 0.0f && uvLast[1] == 0.0f && uvLast[2] == 0.0f && uvTemp < -60.0f; }
+
+bool uvMeasure() {
+  if (!uvMeasureOnce()) return false;
+  if (!uvLooksDead()) return true;
+  Serial.println("#ERR AS7331 lost its settings (all zero) - re-initialising");
+  if (!uv.begin(uvAddr, *uvBus->wire) || !uvApplySettings()) return false;
+  if (!uvMeasureOnce()) return false;
+  return !uvLooksDead();
 }
 
 // Automatic gain: keep the strongest channel between ~2 % and ~85 % of full scale

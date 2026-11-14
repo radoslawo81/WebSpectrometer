@@ -2,6 +2,10 @@
 
 All notable changes of WebSpectrometer2.0. Versions before 2.0.0 were published as the fork `radoslawo81/WebSpectrometer`.
 
+## 2.5.1 – 2026-11-14
+
+- Firmware: the AS7331 is re-initialised automatically when it returns all zeros with −66.9 °C (it lost its settings after a supply dip and stayed in configuration mode); if that does not help, it is searched for again every 3 s
+
 ## 2.5.0 – 2026-11-14
 
 - **AS7265x channel correction** (*Sensors → Calibrate triad with a bulb*): one measurement of a clear incandescent bulb of known colour temperature gives a factor Planck(λ, T) / reading for each of the 18 channels; stored in the browser and applied to all new readings (chart, overlay, main graph, CSV, report). Corrects the factory calibration, which was off by up to 2–3× per channel on the tested board
