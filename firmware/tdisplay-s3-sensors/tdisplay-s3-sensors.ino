@@ -13,7 +13,7 @@
     - Qwiic / STEMMA QT connector next to USB-C: SDA = GPIO43, SCL = GPIO44   (I2C bus "Wire")
     - side header: SDA = GPIO18, SCL = GPIO17                                 (I2C bus "Wire1")
       Both buses are scanned; daisy-chaining both sensors on the Qwiic connector works too.
-    - Buttons: IO14 = hold the display, BOOT (IO0) = switch screen (UV / spectral triad)
+    - Buttons: IO14 = hold the display, BOOT (IO0) = switch screen (both sensors / UV / spectral triad)
 
   Arduino IDE
     - Board package: "esp32" by Espressif (3.x)
@@ -422,7 +422,7 @@ class LGFX_TDisplayS3 : public lgfx::LGFX_Device {
 LGFX_TDisplayS3 lcd;
 LGFX_Sprite canvas(&lcd);
 bool canvasOk = false;
-int screen = 0; // 0 = AS7331, 1 = AS7265x
+int screen = 0; // 0 = both sensors on one screen, 1 = AS7331 large, 2 = AS7265x large
 
 static const uint16_t COL_BG = 0x0841;
 static const uint16_t COL_TXT = 0xEF7D;
@@ -553,10 +553,67 @@ void drawTriad() {
   }
 }
 
+// Both sensors: UVA / UVB / UVC values in a row on top, the 18 triad channels as bars below
+void drawBoth() {
+  drawHeader("UV + 410-940 nm");
+  const char *names[3] = {"UVA", "UVB", "UVC"};
+  for (int c = 0; c < 3; c++) {
+    int x = 4 + c * 106;
+    canvas.fillRoundRect(x, 22, 36, 18, 4, COL_CH[c]);
+    canvas.setFont(&fonts::Font2);
+    canvas.setTextDatum(textdatum_t::middle_center);
+    canvas.setTextColor(TFT_WHITE, COL_CH[c]);
+    canvas.drawString(names[c], x + 18, 31);
+    char val[16], unit[8];
+    formatIrr(uvLast[c], val, unit);
+    canvas.setTextDatum(textdatum_t::middle_left);
+    canvas.setTextColor(uvLast[c] / uvFullScale(c) > 0.9f ? 0xF800 : COL_TXT, COL_BG);
+    canvas.drawString(val, x + 40, 27);
+    canvas.setFont(&fonts::Font0);
+    canvas.setTextColor(COL_MUTED, COL_BG);
+    canvas.drawString(unit, x + 40, 38);
+  }
+  float vmax = 0;
+  for (int i = 0; i < 18; i++) vmax = max(vmax, spLast[i]);
+  const int x0 = 8, w = 17, base = 150, hmax = 96;
+  for (int i = 0; i < 18; i++) {
+    int h = vmax > 0 ? (int)(hmax * spLast[i] / vmax) : 0;
+    canvas.fillRect(x0 + i * w, base - h, w - 3, h, nmColor(SP_NM[i]));
+  }
+  canvas.drawFastHLine(x0, base + 1, 18 * w - 3, COL_MUTED);
+  canvas.setFont(&fonts::Font0);
+  canvas.setTextColor(COL_MUTED, COL_BG);
+  canvas.setTextDatum(textdatum_t::top_center);
+  for (int i = 0; i < 18; i += 3) {
+    char lab[6];
+    snprintf(lab, sizeof lab, "%u", SP_NM[i]);
+    canvas.drawString(lab, x0 + i * w + (w - 3) / 2, base + 4);
+  }
+  char val[16], unit[8], foot[40];
+  formatIrr(vmax, val, unit);
+  snprintf(foot, sizeof foot, "max %s %s", val, unit);
+  canvas.setTextDatum(textdatum_t::top_right);
+  canvas.drawString(foot, 312, base + 4);
+  if (spFlag == 'S' || uvFlag == 'S') {
+    canvas.setTextColor(0xF800, COL_BG);
+    canvas.drawString("SATURATED", 312, 46);
+  }
+}
+
+// Next available screen for the BOOT button: both (only with two sensors) -> UV -> triad
+int nextScreen(int cur) {
+  for (int k = 1; k <= 3; k++) {
+    int s = (cur + k) % 3;
+    if ((s == 0 && uvOk && spOk) || (s == 1 && uvOk) || (s == 2 && spOk)) return s;
+  }
+  return cur;
+}
+
 void drawScreen() {
   if (!canvasOk) return;
   if (!uvOk && !spOk) drawNoSensor();
-  else if (screen == 1 && spOk) drawTriad();
+  else if (screen == 0 && uvOk && spOk) drawBoth();
+  else if (screen == 2 && spOk) drawTriad();
   else if (uvOk) drawUv();
   else drawTriad();
   canvas.pushSprite(0, 0);
@@ -722,7 +779,8 @@ void setup() {
   initSensors();
   printInfo();
 #if USE_DISPLAY
-  if (!uvOk && spOk) screen = 1;
+  if (!uvOk || !spOk) screen = uvOk ? 1 : 2;
+  else screen = 0;
   drawScreen();
 #endif
 }
@@ -762,7 +820,7 @@ void loop() {
   }
   if (btnScreen.pressed()) {
 #if USE_DISPLAY
-    screen = screen ? 0 : 1;
+    screen = nextScreen(screen);
     drawScreen();
 #endif
   }
@@ -783,7 +841,7 @@ void loop() {
     if (uvOk != uvBefore || spOk != spBefore) {
       printInfo(); // a sensor appeared: tell the host
 #if USE_DISPLAY
-      if (!uvOk && spOk) screen = 1;
+      screen = (uvOk && spOk) ? 0 : (uvOk ? 1 : 2);
       drawScreen();
 #endif
     }

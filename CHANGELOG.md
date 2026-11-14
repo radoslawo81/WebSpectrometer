@@ -2,6 +2,10 @@
 
 All notable changes of WebSpectrometer2.0. Versions before 2.0.0 were published as the fork `radoslawo81/WebSpectrometer`.
 
+## 2.5.2 – 2026-11-14
+
+- Firmware: combined screen with both sensors (UVA / UVB / UVC values on top, 18 triad bars below), shown first when both are connected; BOOT cycles combined → UV → triad
+
 ## 2.5.1 – 2026-11-14
 
 - Firmware: the AS7331 is re-initialised automatically when it returns all zeros with −66.9 °C (it lost its settings after a supply dip and stayed in configuration mode); if that does not help, it is searched for again every 3 s

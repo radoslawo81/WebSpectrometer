@@ -32,7 +32,8 @@ Without the display (any ESP32-S3 / ESP32 board): set `#define USE_DISPLAY 0`; L
 
 ## Use
 
-- **Screens**: AS7331 (UVA / UVB / UVC, log bars) and AS7265x (18 coloured bars, linear to the strongest channel). Button **BOOT (IO0)** switches the screen, **IO14** holds it.
+- **Screens**: with both sensors a combined screen (UVA / UVB / UVC values + 18 triad bars) is shown first; **BOOT (IO0)** switches to AS7331 large (log bars) and AS7265x large (18 coloured bars) and back, **IO14** holds the display.
+- **AS7331 reads only zeros (−66.9 °C)** even after the automatic re-initialisation: it was reset by a supply dip into a state only a power cycle clears – unplug USB (and the battery) for ~10 s.
 - **Automatic gain** on both sensors; "SATURATED" means the sensor is too close to the source or the gain is fixed too high.
 - **AS7265x illumination LEDs** (white, IR, UV) are for reflected-light measurements of samples; keep them off when measuring light sources. The blue status LED is switched off so it does not shine into the sensor.
 - In WebSpectrometer2.0 the AS7265x reading can be shown in the main graph or used as the **reference for the spectral response calibration** of the camera spectrometer (smooth-spectrum sources only: halogen, incandescent, sunlight).
@@ -76,6 +77,6 @@ Jeden szkic dla obu czujników, używanych osobno albo razem: **AS7331** (UVA / 
 
 Obie biblioteki czujników muszą być zainstalowane, nawet gdy używasz tylko jednego. Bez wyświetlacza: `#define USE_DISPLAY 0`.
 
-**Użycie:** dwa ekrany – AS7331 (UVA / UVB / UVC) i AS7265x (18 kolorowych słupków); przycisk **BOOT (IO0)** przełącza ekran, **IO14** zatrzymuje odczyt. Wzmocnienie dobiera się automatycznie. Diody oświetlające AS7265x (biała, IR, UV) służą do pomiaru światła odbitego od próbek – przy pomiarze źródeł światła trzymaj je wyłączone; niebieska dioda stanu jest wyłączana, żeby nie świeciła w czujnik. W programie odczyt AS7265x można pokazać na głównym wykresie albo użyć jako **wzorca do kalibracji czułości** spektrometru z kamerą (tylko źródła o gładkim widmie: halogen, żarówka, Słońce).
+**Użycie:** przy dwóch czujnikach najpierw ekran wspólny (wartości UVA / UVB / UVC + 18 słupków triady); przycisk **BOOT (IO0)** przełącza na duży ekran AS7331 i duży ekran AS7265x i z powrotem, **IO14** zatrzymuje odczyt. Jeśli AS7331 mimo automatycznej ponownej inicjalizacji czyta same zera (−66,9 °C), odłącz zasilanie (USB i baterię) na ok. 10 s. Wzmocnienie dobiera się automatycznie. Diody oświetlające AS7265x (biała, IR, UV) służą do pomiaru światła odbitego od próbek – przy pomiarze źródeł światła trzymaj je wyłączone; niebieska dioda stanu jest wyłączana, żeby nie świeciła w czujnik. W programie odczyt AS7265x można pokazać na głównym wykresie albo użyć jako **wzorca do kalibracji czułości** spektrometru z kamerą (tylko źródła o gładkim widmie: halogen, żarówka, Słońce).
 
 **Uwagi:** oba czujniki są szerokopasmowe, więc wąskie linie (diody, linie rtęci) między kanałami albo na ich zboczach mierzą niedokładnie. **UVC jest groźne** dla oczu i skóry: osłaniaj lampy bakteriobójcze, używaj okularów chroniących przed UV i nie patrz w diodę UV płytki AS7265x.
